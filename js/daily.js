@@ -154,6 +154,7 @@
       if (aiCursor < p.length - 1) { aiCursor++; render(); return; }
       source = 'builtin'; offset++; render(); // AI 缓存翻完 → 回到内置库
     } else {
+      if (!window.LLM || !window.LLM.doChat) { offset++; render(); return; } // 未配 Key：直接翻内置库
       source = 'ai';
       const p = aiPool();
       if (p.length) { aiCursor = 0; render(); }

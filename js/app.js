@@ -38,6 +38,12 @@
   SIDEBAR.className = 'wb-sidebar';
   const _cfg = loadLlmCfg();
   const _keySet = (_cfg && _cfg.key) ? '已配置你的 API Key' : '未配置 Key（走服务端默认）';
+  function updateModelTip(){
+    const tip = document.querySelector('.wb-model-tip');
+    if (!tip) return;
+    const c = loadLlmCfg();
+    tip.textContent = '模型设置：' + ((c && c.key) ? '已配置你的 API Key' : '未配置 Key（走服务端默认）');
+  }
   SIDEBAR.innerHTML = `
     <div class="wb-brand"><div class="wb-logo">批</div><div><div class="wb-name">批改台</div><div class="wb-sub">英语作文智能批改</div></div></div>
     <nav class="wb-nav">
@@ -164,6 +170,7 @@
       }
       saveLlmCfg();
       showToast('模型设置已保存');
+      updateModelTip();
     });
     applyVendor();
   })();

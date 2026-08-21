@@ -12,6 +12,7 @@ cp js/store.js          dist/js/
 cp js/llm.js            dist/js/
 cp js/app.js            dist/js/
 cp js/standards.js      dist/js/
+cp js/daily.js          dist/js/
 cp manifest.webmanifest dist/
 cp sw.js                dist/
 cp icon.svg             dist/

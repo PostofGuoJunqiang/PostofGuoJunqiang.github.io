@@ -434,3 +434,22 @@
     .essay-box{height:240px;}
     .dir-box{height:88px;}
   }
+
+  /* ---------- 首页·每日一句 ---------- */
+  .daily-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:14px 0;box-shadow:var(--shadow-card);}
+  .daily-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+  .daily-label{font-size:14px;font-weight:600;color:var(--blue);letter-spacing:.5px;}
+  .daily-src{font-style:normal;font-size:11px;font-weight:500;color:var(--blue);background:var(--chip-blue);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:2px;}
+  .daily-seg{display:flex;background:var(--bg);border-radius:10px;padding:2px;gap:2px;}
+  .daily-seg button{font-size:12px;padding:4px 9px;border:none;background:transparent;color:var(--ink-3);border-radius:8px;cursor:pointer;font-family:var(--font);transition:background .12s ease,color .12s ease;}
+  .daily-seg button.on{background:var(--blue);color:#fff;}
+  .daily-text{font-size:17px;line-height:1.6;color:var(--ink);font-weight:500;min-height:54px;}
+  .daily-cn{font-size:13px;line-height:1.5;color:var(--ink-2);margin-top:8px;min-height:18px;}
+  .daily-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;flex-wrap:wrap;}
+  .daily-author{font-size:12px;color:var(--ink-3);}
+  .daily-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .mini-btn{font-size:12px;padding:6px 12px;border:1px solid var(--border);background:var(--card);color:var(--ink-2);border-radius:9px;cursor:pointer;font-family:var(--font);transition:transform .08s ease,background .12s ease;}
+  .mini-btn:active{transform:scale(.97);}
+  .mini-btn:disabled{opacity:.55;cursor:default;}
+  .mini-btn.primary{background:var(--blue-soft);border-color:var(--chip-blue);color:var(--blue);}
+  .mini-btn.ai{background:var(--chip-purple-bg);border-color:#E5D8FF;color:var(--chip-purple);}

@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="批改台">
 <title>批改台 · 英语作文智能批改</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,6 +28,26 @@
         <div class="app-name">批改台</div>
       </div>
       <div class="sub">英语考试作文智能批改</div>
+      <div class="daily-card" id="dailyCard">
+        <div class="daily-head">
+          <span class="daily-label">每日一句 <em class="daily-src" id="dailySrc"></em></span>
+          <div class="daily-seg" id="dailySeg">
+            <button class="on" data-cat="long">长难句</button>
+            <button data-cat="good">好句</button>
+            <button data-cat="quote">名言</button>
+          </div>
+        </div>
+        <div class="daily-text" id="dailyText"></div>
+        <div class="daily-cn" id="dailyCn"></div>
+        <div class="daily-foot">
+          <span class="daily-author" id="dailyAuthor"></span>
+          <div class="daily-actions">
+            <button class="mini-btn" id="dailyNext">换一句</button>
+            <button class="mini-btn ai" id="dailyAI">AI 生成</button>
+            <button class="mini-btn primary" id="dailySave">收藏</button>
+          </div>
+        </div>
+      </div>
       <div class="cta" id="homeCta">开始批改</div>
       <div class="report-link" id="qcReport">查看过往批改报告 ›</div>
       <div class="section-title">近期批改</div>
@@ -178,5 +199,6 @@
   <script src="js/store.js"></script>
   <script src="js/llm.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/daily.js"></script>
 </body>
 </html>

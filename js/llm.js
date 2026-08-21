@@ -259,5 +259,10 @@ JSON 字段：word（原词，保持原样）、phonetic（音标，如 /kəˈmj
     return { relevant: 1.0 };
   }
 
-  window.LLM = { getLLMConfig, doGrade, doGloss, doTranslate, doTopicCheck };
+  // 通用对话（首页「每日一句」等轻量生成用）：返回 {text, error}
+  function doChat(prompt) {
+    return callLLM(prompt, getLLMConfig());
+  }
+
+  window.LLM = { getLLMConfig, doGrade, doGloss, doTranslate, doTopicCheck, doChat };
 })();

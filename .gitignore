@@ -1,0 +1,14 @@
+# 本地记忆 / 隐私数据（切勿提交到远程仓库）
+.workbuddy/
+
+# 开发 / 后端残留文件（本项目是纯前端，运行不需要）
+server.py
+gen_icons.py
+test-smoke.js
+*.log
+
+# 依赖
+node_modules/
+
+# 构建产物（由 build_dist.sh / CI 生成，不进版本库）
+dist/

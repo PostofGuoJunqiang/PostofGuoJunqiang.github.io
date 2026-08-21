@@ -1,0 +1,17 @@
+# 静态站点镜像只需前端资源；忽略后端/开发/工作区文件
+.git
+.gitignore
+__pycache__/
+*.py
+*.pyc
+.venv/
+venv/
+node_modules/
+.workbuddy/
+data/
+*.log
+gen_icons.py
+test-smoke.js
+README.md
+DEPLOY.md
+Caddyfile

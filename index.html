@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#165DFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="批改台">
+<title>批改台 · 英语作文智能批改</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="phone">
+
+  <!-- ===================== 屏1 首页 ===================== -->
+  <section class="screen show" id="s-home" data-active="home">
+    <div class="content">
+      <div class="top-row">
+        <div class="app-name">批改台</div>
+      </div>
+      <div class="sub">英语考试作文智能批改</div>
+      <div class="cta" id="homeCta">开始批改</div>
+      <div class="report-link" id="qcReport">查看过往批改报告 ›</div>
+      <div class="section-title">近期批改</div>
+      <div id="recentList"></div>
+    </div>
+  </section>
+
+  <!-- ===================== 屏2 新建批改 ===================== -->
+  <section class="screen" id="s-new" data-active="review">
+    <div class="content">
+      <div class="top-row">
+        <div class="screen-title">新建批改</div>
+        <div class="icon-btn" id="newClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      </div>
+      <div class="sub">考试标准（单选，决定评分依据与目标字数）</div>
+      <select class="exam-select" id="levelSelect">
+        <option value="CET4" selected>CET-4</option>
+        <option value="CET6">CET-6</option>
+        <option value="考研英一A">考研英语一 · A节</option>
+        <option value="考研英一B">考研英语一 · B节</option>
+        <option value="考研英二A">考研英语二 · A节</option>
+        <option value="考研英二B">考研英语二 · B节</option>
+        <option value="高中">高中</option>
+        <option value="雅思">雅思</option>
+      </select>
+      <div class="screen-title">作文输入</div>
+      <div class="essay-box" id="essayBox">
+        <textarea class="essay-text" id="essayInput">In recent years, online learning has become increasingly popular among college students. It offers flexibility and convenience, allowing learners to access course materials anytime and anywhere. However, it also requires stronger self-discipline to achieve satisfactory academic results.</textarea>
+        <div class="word-count" id="wordCount">0 词</div>
+        <div class="word-target" id="wordTarget"></div>
+      </div>
+      <div class="sub" id="dirHint">题目 / Directions（考研A节必填）</div>
+      <div class="dir-box">
+        <textarea class="dir-text" id="dirInput">Write an essay based on the saying "Actions speak louder than words."</textarea>
+      </div>
+      <div class="cta grade-btn" id="gradeBtn">开始批改</div>
+    </div>
+  </section>
+
+  <!-- ===================== 屏3 批改结果 ===================== -->
+  <section class="screen" id="s-result" data-active="review">
+    <div class="content">
+      <div class="top-row">
+        <div class="screen-title">批改结果</div>
+        <div class="icon-btn" id="resultClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+      </div>
+      <div id="resultBody">
+        <div class="card"><div class="desc">尚无批改结果，请先在「新建批改」提交作文。</div></div>
+      </div>
+      <div class="dual-cta">
+        <button class="cta-primary" id="genReport">生成报告</button>
+        <button class="cta-primary" id="againBtn">再改一篇</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 屏4 历史记录 ===================== -->
+  <section class="screen" id="s-history" data-active="history">
+    <div class="content">
+      <div class="top-row">
+        <div class="screen-title">历史记录</div>
+      </div>
+      <!-- 批改任务列表（异步：提交即返回，后台批改，完成后此处查看，按时间新→旧全量列出） -->
+      <div id="taskList"></div>
+      <div class="empty" id="taskEmpty" hidden>
+        <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22h16"/><path d="M22 14v16"/><rect x="7" y="9" width="30" height="26" rx="6"/></svg>
+        <div>暂无批改记录<br>提交一篇作文后，结果会出现在这里</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 屏5 报告预览 ===================== -->
+  <section class="screen" id="s-report" data-active="history">
+    <div class="content">
+      <div class="top-row">
+        <div class="screen-title">批改报告</div>
+        <div class="icon-btn" id="reportDownload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 19h16"/></svg></div>
+      </div>
+      <div id="reportBody"></div>
+    </div>
+  </section>
+
+  <!-- ===================== 屏6 我的 ===================== -->
+  <section class="screen" id="s-mine" data-active="mine">
+    <div class="content">
+      <div class="screen-title" style="align-self:flex-start">我的</div>
+      <!-- 模型设置（BYOK：使用者填自己的 API Key，各自承担额度，分发不暴露他人 Key） -->
+      <div class="card model-settings">
+        <div class="ms-title">模型设置</div>
+        <div class="ms-tip">填写你自己的 API Key，批改与取词将使用你的额度；留空则使用服务端默认配置。</div>
+        <label class="ms-label">模型服务商</label>
+        <div class="seg" id="llmVendor" style="margin:0 0 10px">
+          <button class="on" data-vendor="deepseek">DeepSeek</button>
+          <button data-vendor="custom">自定义</button>
+        </div>
+        <label class="ms-label">API Key</label>
+        <input class="token-input" id="llmKey" type="password" placeholder="sk-…" style="margin-bottom:10px" autocomplete="off">
+        <div class="ms-tip" style="margin:-6px 0 10px">DeepSeek 密钥：platform.deepseek.com → API Keys 页面获取（sk- 开头）。</div>
+        <div id="llmCustom" hidden>
+          <div class="ms-tip" style="margin:-2px 0 6px">请输入兼容 OpenAI 格式的接口地址和密钥</div>
+          <label class="ms-label">Base URL</label>
+          <input class="token-input" id="llmBase" placeholder="https://api.deepseek.com/chat/completions" style="margin-bottom:10px" autocomplete="off">
+          <label class="ms-label">模型名</label>
+          <input class="token-input" id="llmModel" placeholder="deepseek-v4-flash" style="margin-bottom:10px" autocomplete="off">
+        </div>
+        <button class="cta-primary" id="llmSave" style="width:100%">保存设置</button>
+      </div>
+      <div class="ms-tip" style="margin-top:12px">本地部署工具：批改记录仅存本机（data/tasks.json），API Key 仅存本浏览器（localStorage），不随包分发。</div>
+    </div>
+  </section>
+
+  <!-- ===================== 屏7 好词好句本 ===================== -->
+  <section class="screen" id="s-vocab" data-active="vocab">
+    <div class="content">
+      <div class="top-row">
+        <div class="screen-title">好词好句本</div>
+        <div class="icon-btn vocab-export-btn" id="vocabExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 19h16"/></svg><span>导出</span></div>
+      </div>
+      <div class="sub">收藏的单词与句子，按考试归类，可导出复习</div>
+      <div id="vocabBody"></div>
+    </div>
+  </section>
+
+  <!-- 底部弹层（纠错 / 取词 共用） -->
+  <div class="sheet-mask" id="sheetMask"></div>
+  <div class="sheet" id="sheet"></div>
+
+  <!-- 评分标准改为「页内可折叠区块」，嵌入各结果屏内（见 .std-section），不再使用底部面板 -->
+
+  <!-- 加载遮罩 -->
+  <div class="loading" id="loading"><div class="loading-box"><div class="spinner"></div><div class="loading-text">批改中…</div></div></div>
+  <!-- 轻提示 -->
+  <div class="toast" id="toast"><span id="toastText"></span><span class="toast-action" id="toastAction" hidden>查看</span></div>
+  <!-- 通用确认弹窗（居中） -->
+  <div class="modal-mask" id="modalMask" hidden>
+    <div class="modal-box">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions">
+        <button class="cta-secondary" id="modalCancel" style="flex:1">取消</button>
+        <button class="cta-primary" id="modalConfirm" style="flex:1">确定</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <script src="js/standards.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/llm.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

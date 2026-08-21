@@ -1,0 +1,36 @@
+# 批改台 · 自建托管（纯静态 + HTTPS）
+#
+# 本应用已是“纯本地”架构：前端 + 浏览器直连你自己的大模型 Key，
+# 历史/好词本/设置全部存在用户本机（桌面端写成 JSON 文件，移动端存 IndexedDB），
+# 服务器端不存任何用户数据。因此分发只需把“静态文件”放到一个支持 HTTPS 的地方。
+#
+# Caddy 在这里的作用是：在你自己的服务器上，把本目录作为静态站提供，并自动签发
+# Let's Encrypt 证书（PWA 的 manifest / service worker 必须在 https 下才生效）。
+#
+# 用法：
+#   1) 把整个项目目录（index.html / css / js / manifest.webmanifest / sw.js / icon*）上传到服务器某目录，例如 /srv/pigai；
+#   2) 把下面 your-domain.com 换成你的真实域名（A 记录已指向本机）；
+#   3) 在服务器上运行：  caddy run --config /srv/pigai/Caddyfile
+#   4) 访问 https://your-domain.com —— 桌面点“安装到桌面”，手机“添加到主屏幕”。
+#   注意：Caddy 默认占用 80/443；若 80 被占（如已有 Nginx），仅用 443 见文件底部片段。
+
+your-domain.com {
+    root * /srv/pigai
+    file_server
+    encode zstd gzip
+    header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+    # SPA 友好的缓存头（manifest / sw 不缓存，避免更新不及时）
+    @noCache path /sw.js /manifest.webmanifest
+    header @noCache Cache-Control "no-store"
+
+    log { output stdout; format console }
+}
+
+# ---------------- 仅 HTTPS（80 端口已被占用时） ----------------
+# your-domain.com:443 {
+#     root * /srv/pigai
+#     file_server
+#     encode zstd gzip
+#     header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+# }

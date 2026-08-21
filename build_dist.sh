@@ -18,4 +18,4 @@ cp icon.svg             dist/
 cp icon-192.png         dist/
 cp icon-512.png         dist/
 
-echo "✓ dist/ 已生成，可直接交给 Netlify / Cloudflare Pages 部署"
+echo "✓ dist/ 已生成，可直接交给 GitHub Pages 部署"

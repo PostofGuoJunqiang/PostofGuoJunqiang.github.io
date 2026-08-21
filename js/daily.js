@@ -1,7 +1,7 @@
 // daily.js — 首页「每日一句」：长难句 / 作文好句 / 名言。
 // 双源设计：
 //   1) 内置精选库（离线兜底，秒开，无需 Key）；
-//   2) 「AI 生成」用用户自己的 API Key（BYOK）现生成一句，结果本地缓存，避免重复扣费。
+//   2) 智能生成用用户自己的 API Key（BYOK）现生成一句，结果本地缓存，避免重复扣费。
 // 全部数据仅存本机（localStorage 仅存生成的句子文本，不存 Key）。
 (function () {
   const LIB = {
@@ -104,7 +104,7 @@
   // 调用户自己的 Key 生成一句并缓存
   async function genAI() {
     if (loading) return null;
-    if (!window.LLM || !window.LLM.doChat) { toast('AI 生成不可用，已显示内置例句'); source = 'builtin'; render(); return null; }
+    if (!window.LLM || !window.LLM.doChat) { toast('智能生成不可用，已显示内置例句'); source = 'builtin'; render(); return null; }
     loading = true; render();
     const r = await window.LLM.doChat(PROMPTS[cat] || PROMPTS.long);
     loading = false;
@@ -114,7 +114,7 @@
       return null;
     }
     const j = extractJSON(r.text);
-    if (!j || !j.en) { toast('AI 返回格式异常，已显示内置例句'); source = 'builtin'; offset = 0; render(); return null; }
+    if (!j || !j.en) { toast('智能生成返回格式异常，已显示内置例句'); source = 'builtin'; offset = 0; render(); return null; }
     const item = { en: String(j.en).trim(), cn: (j.cn || '').trim(), by: (j.by || '').trim(), ai: true };
     let d = {}; try { d = JSON.parse(localStorage.getItem(AI_KEY) || '{}'); } catch (e) { }
     d[cat] = (d[cat] || []).concat(item);
@@ -129,19 +129,16 @@
     const cn = document.getElementById('dailyCn');
     const au = document.getElementById('dailyAuthor');
     const src = document.getElementById('dailySrc');
-    const aiBtn = document.getElementById('dailyAI');
     const nextBtn = document.getElementById('dailyNext');
     if (!el) return;
     if (loading) {
-      el.textContent = 'AI 生成中…';
+      el.textContent = '生成中…';
       cn.textContent = '请稍候';
       au.textContent = '';
       if (src) src.textContent = '';
-      if (aiBtn) aiBtn.disabled = true;
       if (nextBtn) nextBtn.disabled = true;
       return;
     }
-    if (aiBtn) aiBtn.disabled = false;
     if (nextBtn) nextBtn.disabled = false;
     const it = current();
     if (!it) { el.textContent = ''; cn.textContent = ''; au.textContent = ''; if (src) src.textContent = ''; return; }
@@ -154,17 +151,14 @@
   function next() {
     if (source === 'ai') {
       const p = aiPool();
-      if (aiCursor < p.length - 1) { aiCursor++; render(); }
-      else genAI(); // 缓存用完 → 现生成新的
-    } else { offset++; render(); }
-  }
-
-  function switchAI() {
-    if (source === 'ai') { genAI(); return; } // 已是 AI：再生成一条新的
-    source = 'ai';
-    const p = aiPool();
-    if (p.length) { aiCursor = 0; render(); }
-    else genAI();
+      if (aiCursor < p.length - 1) { aiCursor++; render(); return; }
+      source = 'builtin'; offset++; render(); // AI 缓存翻完 → 回到内置库
+    } else {
+      source = 'ai';
+      const p = aiPool();
+      if (p.length) { aiCursor = 0; render(); }
+      else genAI(); // 无缓存 → 现生成新的
+    }
   }
 
   function save() {
@@ -189,10 +183,8 @@
         });
       });
     }
-    const next = document.getElementById('dailyNext');
-    if (next) next.addEventListener('click', next);
-    const ai = document.getElementById('dailyAI');
-    if (ai) ai.addEventListener('click', switchAI);
+    const nextBtn = document.getElementById('dailyNext');
+    if (nextBtn) nextBtn.addEventListener('click', next);
     const sv = document.getElementById('dailySave');
     if (sv) sv.addEventListener('click', save);
     render();

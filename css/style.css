@@ -1,12 +1,13 @@
 /* ============================================================
    批改台 · 桌面版（Apple 设计语言）
-   引入根样式作为功能兜底，随后：
-   1) 覆盖色板为 Apple 系统色（蓝 #0071E3 / 绿 #34C759 / 红 #FF3B30
+   原移动端基座与桌面覆盖层已在重构中合并为单一文件：
+   1) 色板为 Apple 系统色（蓝 #0071E3 / 绿 #34C759 / 红 #FF3B30
       背景 #F5F5F7 / 正文 #1D1D1F）
    2) 形态对齐 Apple：大标题负字距、大圆角、胶囊按钮、
       毛玻璃侧边栏、segmented 控件、克制层次（少边框多留白）
+   3) 文件尾部「基座样式补齐」段包含结果页/历史/阅读视图等
+      所需的基础组件类（Apple 化后并入，避免依赖外链基座）
    ============================================================ */
-@import url('../../css/style.css');
 
 /* ---------- Apple 设计令牌 ---------- */
 :root{
@@ -459,3 +460,111 @@ button{font-family:inherit;}
   .phone > .screen{left:0;}
   .screen .content{padding:24px 22px 44px;}
 }
+
+/* ============================================================
+   基座样式补齐（Apple 化）
+   重构时桌面 CSS 合并为单文件后，原移动端基座中的基础组件类
+   未一并并入，导致结果页/历史/阅读视图部分排版裸奔。以下全部
+   用 Apple 令牌重新实现，功能不受影响。
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+
+/* ---------- 分数卡左右结构 ---------- */
+.sc-left{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.sc-right{display:flex;flex-direction:column;align-items:center;gap:3px;flex:none;}
+.sc-cap{font-size:12px;color:var(--dt-ink-3);font-family:'Noto Sans SC',sans-serif;}
+.score-card{position:relative;overflow:hidden;}
+.score-card .info-btn{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.05);color:var(--dt-ink-2);border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;border:none;cursor:pointer;transition:background .15s ease,color .15s ease;}
+.score-card .info-btn:hover{background:var(--blue-soft);color:var(--blue);}
+
+/* ---------- 雅思维度条 ---------- */
+.dim4{display:flex;flex-direction:column;gap:10px;}
+.dim4-row{display:flex;align-items:center;gap:10px;}
+.dim4-name{font-size:12px;color:var(--dt-ink-2);min-width:150px;font-family:'Noto Sans SC',sans-serif;}
+.dim4-row .dim4-bar{flex:1;}
+.dim4 .desc{font-size:12px;line-height:17px;}
+
+/* ---------- 阅读视图：可点单词 / 批改标记 ---------- */
+.w{transition:background .12s ease,border-radius .12s ease;border-radius:3px;cursor:pointer;padding:0 1px;}
+.w:hover{background:var(--blue-soft);}
+.err-mark{color:var(--red);text-decoration:underline wavy var(--red);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:pointer;font-weight:500;}
+.good-mark{color:var(--blue);font-weight:600;cursor:pointer;text-decoration:underline dashed var(--blue);text-decoration-thickness:1.5px;text-underline-offset:3px;}
+
+/* ---------- 近期 / 历史卡左右结构 ---------- */
+.rc-left,.hc-left{display:flex;flex-direction:column;gap:5px;min-width:0;}
+.rc-meta,.hc-meta{font-size:12px;color:var(--dt-ink-3);font-family:'Noto Sans SC',sans-serif;line-height:18px;}
+.hc-preview{font-size:12px;color:var(--dt-ink-3);font-family:'Noto Sans SC',sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:380px;margin-top:2px;}
+.rc-right,.hc-right{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none;}
+.rc-band,.hc-band{font-size:11px;color:var(--dt-ink-3);font-family:'Noto Sans SC',sans-serif;}
+
+/* ---------- 失败任务卡 ---------- */
+.task-fail-box{width:100%;display:flex;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--dt-border-strong);}
+.task-fail-box .task-state{text-align:left;max-width:100%;}
+.task-fail-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.task-detail{font-size:11px;color:var(--dt-ink-3);font-family:'Noto Sans SC',sans-serif;}
+.task-detail summary{cursor:pointer;color:var(--dt-ink-3);}
+.task-detail[open] summary{margin-bottom:4px;}
+.task-detail-body{background:rgba(0,0,0,.04);border:1px solid var(--dt-border);border-radius:8px;padding:8px 10px;color:var(--dt-ink-3);font-size:11px;line-height:16px;word-break:break-all;font-family:'Inter','Noto Sans SC',sans-serif;}
+
+/* ---------- 翻译卡折叠（默认收起，点标题展开） ---------- */
+.trans-body{display:none;padding:0 20px 20px;font-size:14px;line-height:1.75;color:var(--dt-ink-2);font-family:'Noto Sans SC',sans-serif;}
+.trans-card.open .trans-body{display:block;}
+.trans-head .chev{transition:transform .2s ease;color:var(--dt-ink-3);font-size:14px;}
+.trans-card.open .chev{transform:rotate(180deg);}
+
+/* ---------- 问题清单 ---------- */
+.issue{display:flex;align-items:flex-start;gap:10px;padding:3px 0;}
+.dot{flex:none;width:8px;height:8px;border-radius:4px;margin-top:6px;}
+.issue-text{font-size:13px;line-height:19px;color:var(--dt-ink-2);font-family:'Noto Sans SC',sans-serif;}
+
+/* ---------- 报告布局（保留旧页面兼容） ---------- */
+.rep-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.rep-left{display:flex;flex-direction:column;gap:3px;}
+.rep-right{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none;}
+.rep-cap{font-size:11px;color:var(--dt-ink-3);font-family:'Noto Sans SC',sans-serif;}
+.rep-band{font-size:12px;color:var(--dt-ink-3);font-family:'Noto Sans SC',sans-serif;}
+
+/* ---------- 加载遮罩内布局 ---------- */
+.loading-box{display:flex;flex-direction:column;align-items:center;gap:14px;}
+
+/* ---------- 查词面板 ---------- */
+.dict-item{margin-bottom:12px;}
+.dict-pos{font-size:12px;font-weight:700;color:var(--dt-ink-2);font-style:italic;}
+
+/* ---------- 好词好句本条目 ---------- */
+.vocab-main{display:flex;flex-direction:column;min-width:0;flex:1;}
+.vocab-type{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:980px;font-size:12px;font-weight:600;font-family:'Noto Sans SC',sans-serif;align-self:flex-start;margin-bottom:6px;flex:none;}
+.vocab-type.word{background:var(--chip-purple-bg);color:var(--chip-purple);}
+.vocab-type.sentence{background:var(--blue-soft);color:var(--blue);}
+.vocab-more{display:none;font-size:12px;color:var(--dt-ink-3);margin-top:6px;line-height:1.6;font-family:'Inter','Noto Sans SC',sans-serif;background:rgba(0,0,0,.04);border-radius:9px;padding:8px 10px;}
+.vocab-item.has-more{cursor:pointer;}
+.vocab-item.has-more .vocab-text::after{content:' ▾';font-size:12px;color:var(--dt-ink-3);font-family:'Inter',sans-serif;margin-left:2px;}
+.vocab-item.has-more.open .vocab-text::after{content:' ▴';}
+.vocab-item.has-more.open .vocab-more{display:block;}
+.vocab-ctx{font-size:12px;color:var(--dt-ink-3);margin-top:4px;font-family:'Noto Sans SC',sans-serif;line-height:18px;}
+.vocab-del{color:var(--dt-ink-3);font-size:17px;cursor:pointer;flex:none;width:38px;height:38px;display:flex;align-items:center;justify-content:center;margin:-6px -6px -6px 0;border-radius:9px;transition:background .15s ease,color .15s ease;line-height:1;}
+.vocab-del:hover{background:var(--red-bg);color:var(--red);}
+.vocab-meta{font-size:11px;color:var(--dt-ink-3);margin-top:4px;font-family:'Inter',sans-serif;}
+
+/* ---------- 纠错面板 / 逐句卡片 ---------- */
+.err-issue{font-size:13px;line-height:19px;color:var(--dt-ink-2);font-family:'Noto Sans SC',sans-serif;display:flex;gap:7px;align-items:flex-start;margin-bottom:7px;}
+.sent-head{display:flex;align-items:center;gap:8px;}
+.sent-flag{font-size:11px;padding:0 9px;height:22px;display:inline-flex;align-items:center;border-radius:980px;font-family:'Noto Sans SC',sans-serif;font-weight:600;}
+.sent-flag.ok{background:var(--green-bg);color:#1A7F37;}
+.sent-flag.bad{background:var(--red-bg);color:var(--red);}
+.sent-list .sent-card:first-child{border-top:none;padding-top:0;}
+.fix-label{font-weight:600;margin-right:6px;color:var(--green);}
+.tip-label{flex:none;font-weight:600;}
+
+/* ---------- 评分标准行 ---------- */
+.std-row{display:flex;align-items:flex-start;gap:10px;}
+.std-band{flex:none;min-width:72px;}
+.std-text{flex:1;font-size:13px;line-height:1.6;color:var(--dt-ink-2);}
+.std-row.highlight{background:var(--blue-soft);border-left:3px solid var(--blue);border-radius:8px;padding:8px 12px;margin:4px -10px;}
+.std-row.highlight .std-band{color:var(--blue);}
+
+/* ---------- 成功横幅 / 来源脚注 / Key 校验红框 ---------- */
+.banner svg{width:20px;height:20px;color:var(--green);flex:none;}
+.banner span{font-size:13.5px;font-weight:500;color:#1A7F37;font-family:'Noto Sans SC',sans-serif;}
+.source{font-size:11px;color:var(--dt-ink-3);font-family:'Noto Sans SC',sans-serif;margin-top:10px;line-height:16px;}
+.llm-invalid{border-color:var(--red)!important;background:var(--red-bg);}

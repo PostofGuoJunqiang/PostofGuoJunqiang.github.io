@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#14213D">
+<meta name="theme-color" content="#0071E3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="批改台">
@@ -58,7 +58,7 @@
         </div>
         <div class="hero-meta">
           <div class="hero-stat"><b>8</b><span>考试标准</span></div>
-          <div class="hero-stat"><b>0/9</b><span>雅思档位</span></div>
+          <div class="hero-stat"><b>9</b><span>雅思分制</span></div>
           <div class="hero-stat"><b>15</b><span>CET 满分</span></div>
         </div>
       </div>
@@ -272,13 +272,13 @@
       var cfb = document.getElementById('chooseFolderBtn');
       if(cfb) cfb.addEventListener('click', function(){
         if(!window.Store) return;
-        Store.chooseFolder().then(function(ok){
+        Store.chooseFolder().then(function(r){
           updateStoreMode();
           if(typeof renderVocab==='function') renderVocab();
           if(typeof refreshTasks==='function') refreshTasks();
           if(typeof renderRecent==='function') renderRecent();
           var t=document.getElementById('toast'), tt=document.getElementById('toastText');
-          if(t&&tt){ tt.textContent = ok ? '已连接存档文件夹并读取数据' : '未选择文件夹（仍用浏览器本地存储）'; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2600); }
+          if(t&&tt){ tt.textContent = r.ok ? '已连接存档文件夹并读取数据' : (r.error || '未选择文件夹（仍用浏览器本地存储）'); t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2600); }
         });
       });
       var ib = document.getElementById('importJsonBtn');

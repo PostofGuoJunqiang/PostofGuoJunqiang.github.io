@@ -66,7 +66,7 @@
   if (wbFolderBtn) {
     wbFolderBtn.addEventListener('click', async ()=>{
       if (!window.Store) return;
-      const ok = await Store.chooseFolder();
+      const r = await Store.chooseFolder();
       updateFolderBtn();
       // 选择后刷新列表
       if (typeof renderVocab === 'function') renderVocab();
@@ -76,7 +76,7 @@
       const md = document.getElementById('storeModeDesc');
       if (md) md.textContent = '存储模式：' + (Store.isFileMode() ? '本地文件夹（history.json / vocab.json / settings.json）' : '浏览器 IndexedDB（未关联文件夹）');
       const t = document.getElementById('toast'), tt = document.getElementById('toastText');
-      if (t && tt) { tt.textContent = ok ? '已连接存档文件夹并读取数据' : '未选择文件夹'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2600); }
+      if (t && tt) { tt.textContent = r.ok ? '已连接存档文件夹并读取数据' : (r.error || '未选择文件夹'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2600); }
     });
   }
   function updateFolderBtn(){
@@ -965,8 +965,8 @@
         LLM.doTranslate(text).then(r=>{
           const el = document.getElementById('selTransResult');
           if(!el) return;
-          if(r.error || !r.translation){ el.textContent = '翻译失败：' + (r.error || '未知错误'); return; }
-          el.textContent = r.translation;
+          if(r.error || !r.text){ el.textContent = '翻译失败：' + (r.error || '未知错误'); return; }
+          el.textContent = r.text;
         });
       }
     });

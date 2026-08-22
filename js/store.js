@@ -97,15 +97,20 @@
 
   // 桌面端：让用户选一个本地文件夹作为存档目录（需用户手势触发）
   async function chooseFolder() {
-    if (!window.showDirectoryPicker) { useFS = false; return false; }
+    if (!window.showDirectoryPicker) { useFS = false; return { ok: false, error: '当前浏览器不支持选择文件夹（需 Chrome / Edge 内核，且在 https 或 localhost 下）' }; }
     try {
       dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
       useFS = true;
       await idbSet('pigai-dir-handle', { handle: dirHandle });
       await loadFromFS();
       await persistAll();
-      return true;
-    } catch (e) { useFS = false; return false; }
+      return { ok: true, error: '' };
+    } catch (e) {
+      useFS = false;
+      if (e && e.name === 'AbortError') return { ok: false, error: '已取消选择文件夹' };
+      console.error('chooseFolder:', e);
+      return { ok: false, error: '选择文件夹失败：' + ((e && e.message) ? e.message : String(e)) };
+    }
   }
   // 首次写入时若还没选过文件夹，自动弹一次选择（仅一次）
   async function ensureFolder() {

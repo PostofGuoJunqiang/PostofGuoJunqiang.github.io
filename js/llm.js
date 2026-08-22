@@ -264,5 +264,21 @@ JSON 字段：word（原词，保持原样）、phonetic（音标，如 /kəˈmj
     return callLLM(prompt, getLLMConfig());
   }
 
-  window.LLM = { getLLMConfig, doGrade, doGloss, doTranslate, doTopicCheck, doChat };
+  // 整文润色：在保留原意与考生水平的前提下，把整篇英文表达得更地道、更学术化
+  const POLISH_PROMPT = '你是一位英语写作润色专家。请对以下英文作文做整文润色：\n1. 保留原文全部核心信息、论证结构和考生真实水平（不要拔高到母语者水准，保留可学习性）；\n2. 修正语法错误，替换不自然的表达，把词汇/句型升级到 CET-6 / 考研 / 雅思 6.5 水平；\n3. 在合适位置加入自然连接词，但不要大幅扩张篇幅；\n4. 严格只返回 JSON：{"polished":"润色后的完整英文文本","changes":[{"before":"原片段","after":"修改后","reason":"一句中文说明"}]}，不要任何其它文字。\n\n作文：\n{text}';
+  function doPolish(text) {
+    if (!text || !text.trim()) return Promise.resolve({ text: null, error: '原文为空' });
+    const prompt = POLISH_PROMPT.replace('{text}', text.slice(0, 3000));
+    return callLLM(prompt, getLLMConfig());
+  }
+
+  // 单句润色：把这一句写得更地道（保留语义和难度）
+  const SENT_POLISH_PROMPT = '你是一位英语写作润色专家。请把下面这个英文句子润色得更地道、更学术化（保留原意与大致难度，不要拔高到母语者水平）。严格只返回 JSON：{"polished":"润色后的句子","reason":"一句中文说明修改要点"}，不要任何其它文字。\n\n原句：{sent}';
+  function doPolishSentence(sent) {
+    if (!sent || !sent.trim()) return Promise.resolve({ text: null, error: '句子为空' });
+    const prompt = SENT_POLISH_PROMPT.replace('{sent}', sent);
+    return callLLM(prompt, getLLMConfig());
+  }
+
+  window.LLM = { getLLMConfig, doGrade, doGloss, doTranslate, doTopicCheck, doChat, doPolish, doPolishSentence };
 })();

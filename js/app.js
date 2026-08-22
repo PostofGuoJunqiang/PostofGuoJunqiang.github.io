@@ -486,10 +486,64 @@
     }
     const vs = document.getElementById('viewSeg');
     if(vs) vs.addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; viewMode=b.dataset.view; renderResult(d); });
+    // 润色：整文 + 句子
+    bindPolishHandlers(d);
+  }
+  function bindPolishHandlers(d){
+    const btn = document.getElementById('polishBtn');
+    if(btn){
+      btn.addEventListener('click', ()=>polishWhole(d));
+    }
+    const screen = document.getElementById('s-result');
+    if(screen){
+      screen.querySelectorAll('.sent-polish').forEach(b=>{
+        b.addEventListener('click', (e)=>{ e.stopPropagation(); polishOne(d, b.dataset.i); });
+      });
+    }
+  }
+  function polishWhole(d){
+    const btn = document.getElementById('polishBtn');
+    const body = document.getElementById('polishBody');
+    if(!body || !btn) return;
+    if(btn.disabled) return;
+    btn.disabled = true; body.hidden = false; body.className = 'polish-loading';
+    body.textContent = 'AI 正在润色整篇文章…';
+    LLM.doPolish(d.text || '').then(r=>{
+      btn.disabled = false;
+      if(r.error || !r.text){ body.className = 'polish-body'; body.textContent = '润色失败：' + (r.error || '未知错误'); return; }
+      const j = extractJSONSafe(r.text);
+      if(j && j.polished){ body.className = 'polish-body'; body.textContent = j.polished; }
+      else { body.className = 'polish-body'; body.textContent = r.text.trim(); }
+    });
+  }
+  function polishOne(d, idx){
+    const sent = (d.sentences||[]).find(x=>String(x.index)===String(idx));
+    if(!sent) return;
+    const btn = document.querySelector('.sent-polish[data-i="'+idx+'"]');
+    const out = document.querySelector('.sent-polish-result[data-r="'+idx+'"]');
+    if(!btn || !out || btn.classList.contains('loading')) return;
+    btn.classList.add('loading'); btn.textContent = '润色中…';
+    out.hidden = false; out.innerHTML = '<b>润色中</b>正在改写…';
+    LLM.doPolishSentence(sent.original).then(r=>{
+      btn.classList.remove('loading'); btn.textContent = '✦ 润色这一句';
+      if(r.error || !r.text){ out.innerHTML = '<b>失败</b>' + (r.error || '未知错误'); return; }
+      const j = extractJSONSafe(r.text);
+      if(j && j.polished){ out.innerHTML = '<b>润色</b>' + j.polished + (j.reason ? ' <span style="color:#722ED1">（' + j.reason + '）</span>' : ''); }
+      else { out.innerHTML = '<b>润色</b>' + r.text.trim(); }
+    });
+  }
+  function extractJSONSafe(text){
+    if(!text) return null;
+    text = text.trim();
+    const m = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if(m) text = m[1].trim();
+    const s = text.indexOf('{'), e = text.lastIndexOf('}');
+    if(s>=0 && e>=0){ try{ return JSON.parse(text.slice(s,e+1)); }catch(_){} }
+    return null;
   }
   function buildReadingView(d){
     const reading = (d.sentences||[]).map(s=>
-      `<p data-i="${esc(s.index)}">${renderSentenceText(s)}<span class="sent-collect" data-i="${esc(s.index)}" title="收藏此句">☆</span></p>`
+      `<p data-i="${esc(s.index)}">${renderSentenceText(s)}<span class="sent-polish" data-i="${esc(s.index)}" title="润色这一句">润色</span><span class="sent-collect" data-i="${esc(s.index)}" title="收藏此句">☆</span></p>`
     ).join('');
     const trans = d.translation
       ? `<div class="trans-card open" id="transCard"><div class="trans-head" id="transHead"><span class="section-title">全文翻译</span><span class="chev">▾</span></div><div class="trans-body">${esc(d.translation)}</div></div>`
@@ -497,10 +551,13 @@
     return `<div class="card" style="gap:6px"><div class="card-title">原文精读</div><div class="sub">红色波浪线＝点击看修改；蓝色＝好词好句；点任意单词＝查词/朗读/收藏</div></div>
       <div class="reading" id="reading">${reading}</div>
       ${trans}
-      <div class="path-card"><div class="card-title">升档路径</div><div class="desc" style="color:var(--ink-2)">${esc(d.upgradePath)}</div></div>`;
+      <div class="path-card"><div class="card-title">升档路径</div><div class="desc" style="color:var(--ink-2)">${esc(d.upgradePath)}</div></div>
+      <div class="polish-card" id="polishCard">
+        <div class="polish-head"><div class="polish-title"><span class="spark">✦</span>整文润色</div><button class="mini-btn primary" id="polishBtn">一键润色</button></div>
+        <div class="polish-body" id="polishBody" hidden></div>
+      </div>`;
   }
-  // 逐句卡片视图：多句时提供「上一句/下一句」快速切换
-  let sentPos = 1;
+  // 逐句卡片视图：桌面端省略 sent-nav（用户可滚动浏览全部句子）
   function buildSentencesView(d){
     const sents = (d.sentences||[]).map(s=>{
       const issues=(s.issues||[]).map(i=>{
@@ -514,16 +571,15 @@
         <div class="sent-orig">${esc(s.original)}</div>
         ${s.hasError?`<div class="sent-fix"><span class="fix-label">修改</span>${esc(s.corrected)}</div>`:''}
         ${issues}${tip}
+        <div class="sent-polish-row"><button class="sent-polish" data-i="${esc(s.index)}" title="润色这一句">✦ 润色这一句</button><div class="sent-polish-result" data-r="${esc(s.index)}" hidden></div></div>
       </div>`;
     }).join('');
     const len = (d.sentences||[]).length;
-    if(sentPos < 1 || sentPos > len) sentPos = 1;
-    const nav = len > 1 ? `<div class="sent-nav">
-      <button class="sent-nav-btn" data-dir="-1">‹ 上一句</button>
-      <span class="sent-nav-idx">${sentPos} / ${len}</span>
-      <button class="sent-nav-btn" data-dir="1">下一句 ›</button>
-    </div>` : '';
-    return `<div class="card sent-block" style="gap:10px"><div class="card-title">逐句批改（共 ${len} 句）</div>${nav}<div class="sent-list" id="sentList">${sents}</div></div>`;
+    return `<div class="card sent-block" style="gap:10px"><div class="card-title">逐句批改（共 ${len} 句）</div><div class="sent-list" id="sentList">${sents}</div>
+      <div class="polish-card" id="polishCard">
+        <div class="polish-head"><div class="polish-title"><span class="spark">✦</span>整文润色</div><button class="mini-btn primary" id="polishBtn">一键润色</button></div>
+        <div class="polish-body" id="polishBody" hidden></div>
+      </div></div>`;
   }
 
   // 把一句原文渲染为带内联标注的 HTML（红错词 / 蓝好词 / 可点单词）
@@ -839,21 +895,29 @@
     a.unshift(item); saveVocab(a); renderVocab(); showToastAction('已加入好词好句本','查看',()=>showScreen('s-vocab'));
   }
   function removeVocab(ts){ let a=loadVocab(); a=a.filter(x=>x.ts!=ts); saveVocab(a); renderVocab(); }
+  let vocabFilter = 'all';
   function renderVocab(){
     const body=document.getElementById('vocabBody'); if(!body) return;
-    const a=loadVocab();
-    if(!a.length){
+    const all=loadVocab();
+    if(!all.length){
       body.innerHTML='<div class="vocab-empty"><svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 16h22"/><path d="M11 23h22"/><path d="M11 30h14"/><rect x="6" y="8" width="32" height="30" rx="7"/></svg><div>还没有收藏的词句<br>批改时点击单词 / 句子即可收藏</div></div>';
       return;
     }
-    body.innerHTML = '<div class="list-card">' + a.map(x=>{
+    const groups = { word: [], sentence: [] };
+    all.forEach(x => { (groups[x.type] || groups.sentence).push(x); });
+    const sections = [];
+    const showWord = vocabFilter==='all' || vocabFilter==='word';
+    const showSent = vocabFilter==='all' || vocabFilter==='sentence';
+    function renderItem(x){
+      const hasTrans = x.type==='sentence' && x.translation;
       const sub = x.type==='word'
         ? ((x.phonetic||x.cn) ? `<div class="vocab-sub">${esc(x.phonetic||'')}${x.phonetic&&x.cn?'　':''}${esc(x.cn||'')}</div>` : '')
-        : (x.translation ? `<div class="vocab-sub">${esc(x.translation)}</div>` : '');
+        : (x.cn ? `<div class="vocab-sub">${esc(x.cn)}</div>` : '');
       const more = (x.type==='word' && (x.example||x.exampleCn))
         ? `<div class="vocab-more">${esc(x.example||'')}${x.exampleCn?('　'+esc(x.exampleCn)):''}</div>`
-        : '';
-      return `<div class="vocab-item ${x.type==='word'&&more?'has-more':''}">
+        : (hasTrans ? `<div class="vocab-more"><b style="color:var(--blue)">译文：</b>${esc(x.translation)}</div>` : '');
+      const canExpand = (x.type==='word' && (x.example||x.exampleCn)) || hasTrans;
+      return `<div class="vocab-item ${canExpand?'has-more':''}">
         <div class="vocab-main">
           <span class="vocab-type ${x.type}">${x.type==='word'?'单词':'句子'}</span>
           <div class="vocab-text">${esc(x.text)}</div>
@@ -864,9 +928,29 @@
         </div>
         <div class="vocab-del" data-ts="${x.ts}">✕</div>
       </div>`;
-    }).join('') + '</div>';
+    }
+    function renderGroup(title, type, items, show){
+      if(!show) return '';
+      if(!items.length) return `<div class="vocab-group"><div class="vocab-group-title">${title}<span class="vocab-group-count">0</span></div><div class="vocab-empty" style="padding:24px 20px">暂无${title}</div></div>`;
+      return `<div class="vocab-group"><div class="vocab-group-title">${title}<span class="vocab-group-count">${items.length}</span></div><div class="list-card vocab-list">${items.map(renderItem).join('')}</div></div>`;
+    }
+    body.innerHTML = renderGroup('单词', 'word', groups.word, showWord) + renderGroup('句子', 'sentence', groups.sentence, showSent);
     body.querySelectorAll('.vocab-del').forEach(b=>b.addEventListener('click',(e)=>{ e.stopPropagation(); removeVocab(b.dataset.ts); }));
-    body.querySelectorAll('.vocab-item.has-more').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('open')));
+    body.querySelectorAll('.vocab-item.has-more').forEach(c=>c.addEventListener('click',(e)=>{ if(e.target.closest('.vocab-del')) return; c.classList.toggle('open'); }));
+  }
+  // 积累页分类切换
+  function initVocabFilter(){
+    const seg = document.getElementById('vocabFilter');
+    if(!seg) return;
+    seg.querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(b.classList.contains('on')) return;
+        seg.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+        b.classList.add('on');
+        vocabFilter = b.dataset.filter || 'all';
+        renderVocab();
+      });
+    });
   }
   function exportVocab(){
     const a=loadVocab(); if(!a.length){ showToast('没有可导出的内容'); return; }
@@ -932,6 +1016,7 @@
   }
   // 初始化本地存储（读取已授权的文件夹句柄 / IndexedDB 回退）
   try { Store.init(); } catch (e) {}
+  initVocabFilter();
   let deferredPrompt = null;
   const wbInstallBtn = document.getElementById('wbInstall');
   window.addEventListener('beforeinstallprompt', (e) => {

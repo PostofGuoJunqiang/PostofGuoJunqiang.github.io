@@ -145,8 +145,22 @@ button{font-family:inherit;}
 .mini-btn:disabled{opacity:.5;cursor:default;}
 .mini-btn.primary{background:var(--blue-soft);border-color:transparent;color:var(--blue);}
 .mini-btn.ai{background:var(--chip-purple-bg);border-color:transparent;color:var(--chip-purple);}
-.vocab-export-btn{display:inline-flex;align-items:center;gap:6px;padding:0 18px;height:38px;border-radius:980px;font-size:13px;color:var(--dt-ink-2);}
-.vocab-export-btn span{font-family:'Noto Sans SC',sans-serif;font-weight:500;}
+.vocab-export-btn{display:inline-flex;align-items:center;gap:6px;padding:0 18px;height:38px;border-radius:980px;font-size:13px;color:var(--dt-ink-2);background:var(--dt-surface);border:1px solid var(--dt-border-strong);white-space:nowrap;font-family:'Noto Sans SC',sans-serif;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease;}
+.vocab-export-btn:hover{background:var(--blue-soft);color:var(--blue);border-color:transparent;}
+.vocab-export-btn svg{width:16px;height:16px;flex:none;}
+.vocab-export-btn span{font-weight:500;}
+.vocab-head-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.vocab-seg{height:38px;padding:3px;}
+.vocab-seg button{font-size:13px;padding:4px 14px;}
+
+/* 积累页分组（单词 / 句子） */
+.vocab-group{margin-bottom:18px;}
+.vocab-group:last-child{margin-bottom:0;}
+.vocab-group-title{font-size:14.5px;font-weight:600;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;margin-bottom:10px;display:flex;align-items:center;gap:8px;letter-spacing:-.01em;}
+.vocab-group-count{font-size:11.5px;color:var(--blue);background:var(--blue-soft);border-radius:6px;padding:2px 8px;font-weight:600;font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;}
+.vocab-list{background:transparent!important;border:none!important;box-shadow:none!important;display:block!important;grid-template-columns:none!important;overflow:visible!important;}
+.vocab-item{cursor:pointer;transition:background .15s ease;}
+.vocab-item:hover{background:#FAFAFB;}
 .task-retry{border-radius:980px;height:32px;padding:0 16px;font-size:12.5px;transition:filter .15s ease;}
 .task-retry.ghost{background:var(--dt-surface);color:var(--blue);border:1px solid var(--dt-border-strong);}
 .task-retry:hover{filter:brightness(.95);}
@@ -291,12 +305,47 @@ button{font-family:inherit;}
 .vocab-sub{font-size:13px;color:var(--dt-ink-2);margin-top:5px;line-height:1.55;font-family:'Noto Sans SC',sans-serif;}
 .vocab-empty{text-align:center;color:var(--dt-ink-3);font-size:14px;padding:48px 20px;line-height:22px;font-family:'Noto Sans SC',sans-serif;}
 
-/* 评分标准折叠区 */
-.std-section{border:1px solid rgba(0,0,0,.05);border-radius:20px;overflow:hidden;background:var(--dt-surface);}
-.std-row{padding:8px 16px;font-size:13px;color:var(--dt-ink-2);font-family:'Noto Sans SC',sans-serif;border-top:1px solid rgba(0,0,0,.04);}
+/* 评分标准折叠区（默认收起，点 ? 展开） */
+.std-section{border:1px solid rgba(0,0,0,.05);border-radius:16px;overflow:hidden;background:var(--dt-surface);}
+.std-section .std-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;user-select:none;transition:background .15s ease;}
+.std-section .std-head:hover{background:#FAFAFB;}
+.std-section .std-head-t{display:flex;align-items:center;gap:10px;}
+.std-section .std-head-t .q{width:22px;height:22px;border-radius:50%;background:var(--blue-soft);color:var(--blue);font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;}
+.std-section .std-title{font-size:14.5px;font-weight:600;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;}
+.std-section .std-chev{color:var(--dt-ink-3);font-size:14px;transition:transform .2s ease;}
+.std-section .std-body{display:none;padding:6px 18px 18px;border-top:1px solid rgba(0,0,0,.04);}
+.std-section.open .std-body{display:block;}
+.std-section.open .std-chev{transform:rotate(180deg);}
+.std-section .std-source{font-size:12px;color:var(--dt-ink-3);margin-bottom:10px;line-height:18px;}
+.std-section .std-sub{font-size:12.5px;color:var(--dt-ink-2);margin-bottom:10px;font-weight:500;}
+.std-section .std-dim{margin-top:10px;}
+.std-section .std-dim-name{font-size:13px;font-weight:600;color:var(--dt-ink);margin-bottom:6px;}
+.std-row{padding:8px 0;font-size:13px;color:var(--dt-ink-2);font-family:'Noto Sans SC',sans-serif;border-top:1px solid rgba(0,0,0,.04);}
 .std-row:first-of-type{border-top:none;}
-.std-row.highlight{background:var(--blue-soft);border-left:3px solid var(--blue);border-radius:8px;padding-left:14px;}
-.std-band{font-weight:600;color:var(--dt-ink);}
+.std-row.highlight{background:var(--blue-soft);border-left:3px solid var(--blue);border-radius:8px;padding:8px 12px;margin:4px -10px;}
+.std-row.highlight .std-band{color:var(--blue);}
+.std-band{font-weight:600;color:var(--dt-ink);display:inline-block;min-width:64px;}
+.std-section .std-note-i{background:var(--blue-soft);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:19px;color:var(--blue);margin-bottom:10px;}
+
+/* 桌面版隐藏：上一句/下一句导航（桌面有滚动条，可滚动浏览全部句子） */
+.sent-nav{display:none!important;}
+
+/* 整文润色 + 句子润色 */
+.polish-card{background:var(--dt-surface);border:1px solid rgba(0,0,0,.05);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;}
+.polish-card .polish-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.polish-card .polish-title{font-size:14.5px;font-weight:600;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;display:flex;align-items:center;gap:8px;}
+.polish-card .polish-title .spark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#AF52DE 0%,#5856D6 100%);color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center;}
+.polish-card .polish-body{font-size:14px;line-height:1.75;color:var(--dt-ink-2);font-family:'Inter','Noto Sans SC',sans-serif;white-space:pre-wrap;word-break:break-word;}
+.polish-card .polish-loading{font-size:13px;color:var(--dt-ink-3);font-style:italic;display:flex;align-items:center;gap:6px;}
+.polish-card .polish-loading::before{content:'';width:14px;height:14px;border:2px solid rgba(0,0,0,.1);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
+.sent-card{position:relative;}
+.sent-polish-row{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-top:4px;}
+.sent-polish{font-size:12px;color:var(--blue);background:var(--blue-soft);border:1px solid rgba(0,113,227,.15);border-radius:8px;padding:5px 12px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;font-weight:500;transition:background .15s ease,border-color .15s ease,transform .08s ease;flex:none;}
+.sent-polish:hover{background:#D6E6FF;border-color:rgba(0,113,227,.30);}
+.sent-polish:active{transform:scale(.97);}
+.sent-polish.loading{opacity:.6;cursor:default;background:var(--blue-soft);}
+.sent-polish-result{flex:1;min-width:240px;padding:8px 12px;background:#F5F0FF;border:1px solid #E5D8FF;border-radius:8px;font-size:13px;line-height:1.65;color:#4A2D8C;font-family:'Inter','Noto Sans SC',sans-serif;white-space:pre-wrap;word-break:break-word;}
+.sent-polish-result b{color:#AF52DE;font-weight:600;margin-right:6px;}
 
 /* ---------- 覆盖层 ---------- */
 .sheet-mask{position:absolute;inset:0;background:rgba(0,0,0,.28);display:none;z-index:70;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
@@ -308,7 +357,9 @@ button{font-family:inherit;}
 }
 .sheet.show{display:block;animation:sheetIn .2s cubic-bezier(.25,.1,.25,1);}
 @keyframes sheetIn{from{opacity:0;transform:translate(-50%,-47%)}to{opacity:1;transform:translate(-50%,-50%)}}
-.sheet-title{font-size:16px;font-weight:700;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;letter-spacing:-.01em;}
+.sheet-title{font-size:16px;font-weight:700;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;letter-spacing:-.01em;}
+.sheet-close{color:var(--dt-ink-3);font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(0,0,0,.05);margin:0;padding:0;flex:none;transition:background .15s ease,color .15s ease;}
+.sheet-close:hover{background:rgba(0,0,0,.09);color:var(--dt-ink);}
 .sheet-word{font-size:24px;font-weight:700;color:var(--blue);font-family:'Inter',sans-serif;letter-spacing:-.01em;}
 .sheet-phon{font-size:14px;color:var(--dt-ink-3);margin:3px 0 14px;}
 .dict-def{font-size:14px;line-height:1.65;color:var(--dt-ink-2);font-family:'Noto Sans SC',sans-serif;}

@@ -28,7 +28,6 @@
           <div class="page-title">首页</div>
           <div class="page-sub">英语考试作文智能批改</div>
         </div>
-        <button class="cta-primary page-cta" id="homeCta">开始批改</button>
       </div>
 
       <div class="daily-card" id="dailyCard">
@@ -46,7 +45,6 @@
           <span class="daily-author" id="dailyAuthor"></span>
           <div class="daily-actions">
             <button class="mini-btn" id="dailyNext">换一句</button>
-            <button class="mini-btn ai" id="dailyAI">AI 生成</button>
             <button class="mini-btn primary" id="dailySave">收藏</button>
           </div>
         </div>
@@ -56,7 +54,7 @@
         <div class="hero-main">
           <div class="hero-title">提交作文，AI 逐句批改</div>
           <div class="hero-desc">按 CET / 考研 / 雅思官方标准评分，给出修改建议、词汇升级、全文翻译与升档路径。数据只存你本机。</div>
-          <button class="cta" id="heroCta" style="max-width:200px">开始批改</button>
+          <button class="cta" id="homeCta" style="max-width:200px">开始批改</button>
         </div>
         <div class="hero-meta">
           <div class="hero-stat"><b>8</b><span>考试标准</span></div>
@@ -224,7 +222,14 @@
           <div class="page-title">好词好句本</div>
           <div class="page-sub">收藏的单词与句子，可导出复习</div>
         </div>
-        <button class="icon-btn vocab-export-btn" id="vocabExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 19h16"/></svg><span>导出</span></button>
+        <div class="vocab-head-actions">
+          <div class="seg vocab-seg" id="vocabFilter">
+            <button class="on" data-filter="all">全部</button>
+            <button data-filter="word">单词</button>
+            <button data-filter="sentence">句子</button>
+          </div>
+          <button class="vocab-export-btn" id="vocabExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 19h16"/></svg><span>导出</span></button>
+        </div>
       </div>
       <div id="vocabBody"></div>
     </div>
@@ -259,7 +264,7 @@
   <script src="../js/daily.js"></script>
   <script>
     // 桌面版专属增强：首页横幅按钮 → 新建批改（app.js 已全局暴露 showScreen）
-    document.getElementById('heroCta').addEventListener('click', () => showScreen('s-new'));
+    document.getElementById('homeCta').addEventListener('click', () => showScreen('s-new'));
   </script>
 </body>
 </html>

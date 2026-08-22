@@ -530,6 +530,7 @@ button{font-family:inherit;}
 /* ---------- 查词面板 ---------- */
 .dict-item{margin-bottom:12px;}
 .dict-pos{font-size:12px;font-weight:700;color:var(--dt-ink-2);font-style:italic;}
+.sheet-actions{display:flex;gap:10px;margin-top:16px;}
 
 /* ---------- 好词好句本条目 ---------- */
 .vocab-main{display:flex;flex-direction:column;min-width:0;flex:1;}

@@ -199,7 +199,7 @@
         llmCfg.model = modelInput.value.trim();
       } else {
         llmCfg.base = 'https://api.deepseek.com/chat/completions';
-        llmCfg.model = modelInput.value.trim() || 'deepseek-v4-flash';
+        llmCfg.model = modelInput.value.trim() || 'deepseek-chat';
       }
       // 双保险：先写一次，回读校验；失败时明确告知（隐私模式/被禁用 localStorage 会失败）
       let savedOk = false;
@@ -216,6 +216,34 @@
       showToast('模型设置已保存');
       updateModelTip();
     });
+    // 测试连接：用当前输入框里的 key（即使未保存也可测）真实调一次模型
+    const testBtn = document.getElementById('llmTest');
+    const testResult = document.getElementById('llmTestResult');
+    if (testBtn && window.LLM && LLM.testConnection) {
+      testBtn.addEventListener('click', async ()=>{
+        const tmpKey = keyInput.value.trim();
+        if (!tmpKey) { testResult.textContent = '请先填写 API Key'; testResult.style.color = 'var(--warn)'; return; }
+        testResult.style.color = 'var(--dt-ink-3)';
+        testResult.textContent = '正在连接模型…';
+        testBtn.disabled = true;
+        // 临时把当前输入值写进 localStorage（便于 testConnection 读到），结束后恢复
+        const prev = (function(){ try { return JSON.parse(localStorage.getItem(LLM_KEY) || '{}'); } catch(e){ return {}; } })();
+        const tmpBase = llmCfg.vendor === 'custom' ? baseInput.value.trim() : 'https://api.deepseek.com/chat/completions';
+        const tmpModel = modelInput.value.trim() || 'deepseek-chat';
+        try { localStorage.setItem(LLM_KEY, JSON.stringify(Object.assign({}, prev, { key: tmpKey, base: tmpBase, model: tmpModel }))); } catch(e){}
+        const r = await LLM.testConnection();
+        try { localStorage.setItem(LLM_KEY, JSON.stringify(prev)); } catch(e){}
+        testBtn.disabled = false;
+        if (r.ok) {
+          testResult.style.color = 'var(--green)';
+          testResult.textContent = '✓ 连接成功：' + (r.text || '').slice(0, 80);
+        } else {
+          testResult.style.color = 'var(--red)';
+          testResult.textContent = '✗ ' + (r.error || '失败');
+          testResult.style.whiteSpace = 'pre-wrap';
+        }
+      });
+    }
     // 启动时主动同步一次（侧边栏右侧"模型设置"提示文案 + input 回填）
     updateModelTip();
   })();

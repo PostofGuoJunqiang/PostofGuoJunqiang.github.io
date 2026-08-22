@@ -180,9 +180,13 @@
             <label class="ms-label">Base URL</label>
             <input class="token-input" id="llmBase" placeholder="https://api.deepseek.com/chat/completions" style="margin-bottom:10px" autocomplete="off">
             <label class="ms-label">模型名</label>
-            <input class="token-input" id="llmModel" placeholder="deepseek-v4-flash" style="margin-bottom:10px" autocomplete="off">
+            <input class="token-input" id="llmModel" placeholder="deepseek-chat" style="margin-bottom:10px" autocomplete="off">
           </div>
-          <button class="cta-primary" id="llmSave" style="width:100%">保存设置</button>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="cta-primary" id="llmSave" style="flex:1">保存设置</button>
+            <button class="mini-btn" id="llmTest" style="flex:1">测试连接</button>
+          </div>
+          <div id="llmTestResult" class="ms-tip" style="margin-top:8px;min-height:18px"></div>
         </div>
         <div class="card" style="margin-top:14px">
           <div class="card-title">本地存档</div>

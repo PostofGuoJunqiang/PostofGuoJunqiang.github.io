@@ -3,6 +3,7 @@
 // 评分标准数据直接复用 standards.js 的全局 STANDARDS（单一数据源，与 server.py 逐字一致）。
 (function () {
   const DEFAULT_BASE = 'https://api.deepseek.com/chat/completions';
+  const DEFAULT_MODEL = 'deepseek-chat'; // 官方稳定模型名（不要用编造的名字）
 
   // 读取「我的-模型设置」中保存的配置（localStorage.llm_cfg）
   function getLLMConfig() {
@@ -10,7 +11,7 @@
     try { c = JSON.parse(localStorage.getItem('llm_cfg') || '{}'); } catch (e) { }
     const vendor = c.vendor || 'deepseek';
     const base = c.base || (vendor === 'custom' ? '' : DEFAULT_BASE);
-    const model = c.model || 'deepseek-v4-flash';
+    const model = c.model || DEFAULT_MODEL;
     return { base, key: (c.key || '').trim(), model, models: [model] };
   }
 
@@ -18,17 +19,54 @@
   function callLLM(prompt, cfg) {
     if (!cfg || !cfg.key) return Promise.resolve({ text: null, error: '未填写 API Key（请在「我的-模型设置」填写）' });
     if (!cfg.base) return Promise.resolve({ text: null, error: '未配置模型接口地址（请在「我的-模型设置」选择服务商或填写自定义 Base）' });
-    const model = cfg.model || (cfg.models && cfg.models[0]) || '';
+    if (!/^https?:\/\//i.test(cfg.base)) return Promise.resolve({ text: null, error: '接口地址必须以 http:// 或 https:// 开头，当前为：' + cfg.base });
+    const model = cfg.model || (cfg.models && cfg.models[0]) || DEFAULT_MODEL;
     const temperature = (cfg && typeof cfg.temperature === 'number') ? cfg.temperature : 0.3;
     const body = JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], stream: false, temperature });
     return fetch(cfg.base, {
       method: 'POST',
+      mode: 'cors',
       headers: { Authorization: 'Bearer ' + cfg.key, 'Content-Type': 'application/json' },
       body
     })
-      .then(r => { if (!r.ok) return r.text().then(t => Promise.reject('HTTP ' + r.status + ': ' + t)); return r.json(); })
+      .then(r => {
+        if (!r.ok) {
+          return r.text().then(t => Promise.reject({ kind: 'http', status: r.status, text: (t || '').slice(0, 400) }));
+        }
+        return r.json();
+      })
       .then(d => ({ text: (d && d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) || null, error: null }))
-      .catch(e => ({ text: null, error: String((e && e.message) ? e.message : e) }));
+      .catch(e => {
+        // 浏览器层失败（Failed to fetch / Load failed / Mixed Content）
+        if (e && e.kind === 'http') {
+          return { text: null, error: 'HTTP ' + e.status + ' · ' + (e.text || '') };
+        }
+        const raw = (e && e.message) ? e.message : String(e);
+        let hint = raw;
+        if (/Failed to fetch|Load failed|NetworkError/i.test(raw)) {
+          const baseStr = String(cfg.base);
+          const isHttps = location.protocol === 'https:';
+          const baseIsHttps = /^https:\/\//i.test(baseStr);
+          if (isHttps && !baseIsHttps) {
+            hint = '浏览器禁止 HTTPS 页面请求 HTTP 接口（Mixed Content）。请改用 https:// 开头 的接口地址，或用「我的-模型设置-自定义 Base」填一个支持 HTTPS 的接口。';
+          } else {
+            hint = '网络请求被拦截（最常见原因：目标接口未返回 CORS 头 Access-Control-Allow-Origin）。请检查：\n1) 接口地址是否以 https:// 开头\n2) 该服务商是否允许浏览器直连（部分代理不支持 CORS）\n3) 是否被浏览器扩展 / 隐私模式拦截\n原始错误：' + raw;
+          }
+        }
+        return { text: null, error: hint };
+      });
+  }
+
+  // 极简连通性测试（用户保存 Key 后用来一键 ping）
+  async function testConnection() {
+    const cfg = getLLMConfig();
+    if (!cfg.key) return { ok: false, error: '未填写 API Key（请在「我的-模型设置」填写）' };
+    if (!cfg.base) return { ok: false, error: '未配置模型接口地址' };
+    return callLLM('用一句话回复"连接成功"。', cfg).then(r => {
+      if (r.error) return { ok: false, error: r.error };
+      if (!r.text) return { ok: false, error: '接口返回为空（可能 Model 名称不存在）' };
+      return { ok: true, text: r.text };
+    });
   }
 
   // 从模型输出稳健提取 JSON（兼容 ```json 包裹）
@@ -316,5 +354,5 @@ JSON 字段：word（原词，保持原样）、phonetic（音标，如 /kəˈmj
     return callLLM(prompt, Object.assign({}, getLLMConfig(), { temperature: 0.2 }));
   }
 
-  window.LLM = { getLLMConfig, doGrade, doGloss, doTranslate, doTopicCheck, doChat, doPolish, doPolishSentence };
+  window.LLM = { getLLMConfig, doGrade, doGloss, doTranslate, doTopicCheck, doChat, doPolish, doPolishSentence, testConnection };
 })();

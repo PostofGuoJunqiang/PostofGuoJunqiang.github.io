@@ -402,7 +402,7 @@ button{font-family:inherit;}
   max-height:84vh;background:rgba(255,255,255,.96);border-radius:22px;overflow:hidden;
   box-shadow:var(--dt-shadow-lg);z-index:71;border:1px solid rgba(0,0,0,.06);
 }
-.sheet-content{padding:26px 28px 28px;max-height:84vh;overflow-y:auto;box-sizing:border-box;}
+.sheet-content{padding:26px 28px 28px;max-height:84vh;overflow-y:auto;box-sizing:border-box;display:flex;flex-direction:column;}
 .sheet.show{display:block;animation:sheetIn .2s cubic-bezier(.25,.1,.25,1);}
 @keyframes sheetIn{from{opacity:0;transform:translate(-50%,-47%)}to{opacity:1;transform:translate(-50%,-50%)}}
 .sheet-title{font-size:16px;font-weight:700;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;letter-spacing:-.01em;}
@@ -530,7 +530,7 @@ button{font-family:inherit;}
 /* ---------- 查词面板 ---------- */
 .dict-item{margin-bottom:12px;}
 .dict-pos{font-size:12px;font-weight:700;color:var(--dt-ink-2);font-style:italic;}
-.sheet-actions{display:flex;gap:10px;margin-top:16px;}
+.sheet-actions{display:flex;gap:10px;margin-top:16px;width:100%;}
 
 /* ---------- 好词好句本条目 ---------- */
 .vocab-main{display:flex;flex-direction:column;min-width:0;flex:1;}

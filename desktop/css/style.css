@@ -436,7 +436,6 @@ button{font-family:inherit;}
 #s-new .content{gap:22px;}
 #s-result .content{gap:16px;}
 #s-history .content{gap:14px;}
-#s-report .content{gap:16px;}
 
 /* ---------- 响应式收窄 ---------- */
 @media (max-width:1180px){

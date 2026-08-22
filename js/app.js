@@ -50,6 +50,10 @@
       ${TABS.map(([id,label])=>`<button class="wb-nav-item ${id==='home'?'active':''}" data-go="${id}">${ICONS[id]}<span>${label}</span></button>`).join('')}
     </nav>
     <div class="wb-side-foot">
+      <button class="wb-folder" id="wbFolder" title="选择/重选存档文件夹">
+        <svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>
+        <span id="wbFolderText">选择存档文件夹</span>
+      </button>
       <div class="wb-model-tip">模型设置：${_keySet}</div>
       <button class="wb-install" id="wbInstall" hidden>＋ 安装到桌面</button>
     </div>`;
@@ -57,6 +61,35 @@
   SIDEBAR.querySelectorAll('.wb-nav-item').forEach(b=>{
     b.addEventListener('click', ()=>{ const id=TAB_TARGET[b.dataset.go]; showScreen(id); if(id==='s-vocab') renderVocab(); });
   });
+  // 侧边栏"选择存档文件夹"按钮
+  const wbFolderBtn = document.getElementById('wbFolder');
+  if (wbFolderBtn) {
+    wbFolderBtn.addEventListener('click', async ()=>{
+      if (!window.Store) return;
+      const ok = await Store.chooseFolder();
+      updateFolderBtn();
+      // 选择后刷新列表
+      if (typeof renderVocab === 'function') renderVocab();
+      if (typeof refreshTasks === 'function') refreshTasks();
+      if (typeof renderRecent === 'function') renderRecent();
+      // 桌面版的「我的-本地存档」模式文字也要同步
+      const md = document.getElementById('storeModeDesc');
+      if (md) md.textContent = '存储模式：' + (Store.isFileMode() ? '本地文件夹（history.json / vocab.json / settings.json）' : '浏览器 IndexedDB（未关联文件夹）');
+      const t = document.getElementById('toast'), tt = document.getElementById('toastText');
+      if (t && tt) { tt.textContent = ok ? '已连接存档文件夹并读取数据' : '未选择文件夹'; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2600); }
+    });
+  }
+  function updateFolderBtn(){
+    const b = document.getElementById('wbFolder'); if (!b) return;
+    const t = document.getElementById('wbFolderText'); if (!t) return;
+    if (window.Store && Store.isFileMode()) {
+      b.classList.add('connected');
+      t.textContent = '存档已连接 ✓';
+    } else {
+      b.classList.remove('connected');
+      t.textContent = '选择存档文件夹';
+    }
+  }
 
   function showScreen(id){
     const target = document.getElementById(id);
@@ -1023,6 +1056,7 @@
   }
   // 初始化本地存储（读取已授权的文件夹句柄 / IndexedDB 回退）
   try { Store.init(); } catch (e) {}
+  Store.init().then(()=>{ if (typeof updateFolderBtn==='function') updateFolderBtn(); }).catch(()=>{});
   initVocabFilter();
   let deferredPrompt = null;
   const wbInstallBtn = document.getElementById('wbInstall');

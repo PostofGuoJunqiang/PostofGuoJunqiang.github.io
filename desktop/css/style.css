@@ -110,6 +110,18 @@ button{font-family:inherit;}
 .wb-install:active{transform:scale(.98);}
 .wb-install svg{width:17px;height:17px;}
 
+/* 侧边栏底部：选择/重选存档文件夹（全局可见） */
+.wb-folder{
+  height:38px;border:1px dashed var(--dt-border-strong);border-radius:11px;background:var(--dt-surface);
+  color:var(--dt-ink-2);font-size:12.5px;font-weight:500;font-family:'Noto Sans SC',sans-serif;
+  cursor:pointer;display:flex;align-items:center;justify-content:flex-start;gap:8px;padding:0 12px;
+  transition:background .15s ease,border-color .15s ease,color .15s ease;
+}
+.wb-folder:hover{background:var(--blue-soft);border-color:var(--blue);color:var(--blue);}
+.wb-folder svg{width:15px;height:15px;flex:none;}
+.wb-folder.connected{background:var(--green-bg);border:1px solid rgba(52,199,89,.30);color:#1A7F37;}
+.wb-folder.connected:hover{background:rgba(52,199,89,.18);border-color:#1A7F37;color:#1A7F37;}
+
 /* ---------- 页头（Apple 大标题） ---------- */
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:28px;}
 .page-title{font-size:32px;font-weight:700;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;letter-spacing:-.02em;line-height:1.15;}

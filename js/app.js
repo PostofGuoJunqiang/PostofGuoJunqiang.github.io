@@ -885,24 +885,27 @@
     const btn = document.getElementById('ctxTranslate');
     if(!screen || !menu || !btn) return;
     let picked = '';
-    screen.addEventListener('contextmenu', e=>{
+    function showMenu(x, y){
+      menu.hidden = false;
+      const w = menu.offsetWidth || 180, h = menu.offsetHeight || 50;
+      menu.style.left = Math.min(x, window.innerWidth - w - 8) + 'px';
+      menu.style.top  = Math.min(y, window.innerHeight - h - 8) + 'px';
+    }
+    // 挂在 document 上更稳：结果屏内划选英文右键即弹出，其余区域不影响原生菜单
+    document.addEventListener('contextmenu', e=>{
+      if(!screen.classList.contains('show')) return;
       const sel = window.getSelection && window.getSelection();
-      if(!sel){ return; }
+      if(!sel) return;
       const text = String(sel.toString() || '').trim();
       if(text.length < 2 || text.length > 500) return;
       const node = sel.anchorNode;
       const el = node && (node.nodeType === 1 ? node : node.parentElement);
       if(!el) return;
-      const inReading = !!(el.closest && el.closest('.reading, .sent-block, .sent-card'));
-      if(!inReading) return;
+      const inScope = el.closest && el.closest('.reading, .sent-block, .sent-card');
+      if(!inScope) return;
       e.preventDefault();
       picked = text;
-      menu.hidden = false;
-      const w = 180, h = 50;
-      const x = Math.min(e.clientX, window.innerWidth - w - 8);
-      const y = Math.min(e.clientY, window.innerHeight - h - 8);
-      menu.style.left = x + 'px';
-      menu.style.top = y + 'px';
+      showMenu(e.clientX, e.clientY);
     });
     btn.addEventListener('click', ()=>{
       const text = picked;
@@ -1055,9 +1058,11 @@
     showToast('已导出好词好句本');
   }
 
-  // ===== CTA 导航 =====
-  document.getElementById('homeCta').addEventListener('click', ()=>showScreen('s-new'));
-  document.getElementById('qcReport').addEventListener('click', ()=>showScreen('s-history'));
+  // ===== CTA 导航（部分按钮仅存在于手机端，统一守卫避免桌面端脚本中断）=====
+  const byId = id => document.getElementById(id);
+  const onClick = (id, fn) => { const el = byId(id); if(el) el.addEventListener('click', fn); };
+  onClick('homeCta', ()=>showScreen('s-new'));
+  onClick('qcReport', ()=>showScreen('s-history'));
 
   // 首页「近期批改」：真实数据（最近 2 条已完成任务），点击打开结果
   async function renderRecent(){
@@ -1083,7 +1088,8 @@
       </div>`;
     }).join('');
   }
-  document.getElementById('recentList').addEventListener('click', async (e)=>{
+  const recentListEl = document.getElementById('recentList');
+  if(recentListEl) recentListEl.addEventListener('click', async (e)=>{
     const card = e.target.closest('.recent-card');
     if(!card) return;
     if(card.dataset.go === 'grade'){ showScreen('s-new'); return; }
@@ -1095,12 +1101,12 @@
     }
   });
   renderRecent();
-  document.getElementById('newClose').addEventListener('click', ()=>showScreen('s-home'));
-  document.getElementById('resultClose').addEventListener('click', ()=>showScreen('s-home'));
-  document.getElementById('genReport').addEventListener('click', ()=>{ renderReport(lastResult); showScreen('s-report'); });
-  document.getElementById('againBtn').addEventListener('click', ()=>showScreen('s-new'));
-  document.getElementById('reportDownload').addEventListener('click', downloadReport);
-  document.getElementById('vocabExport').addEventListener('click', exportVocab);
+  onClick('newClose', ()=>showScreen('s-home'));
+  onClick('resultClose', ()=>showScreen('s-home'));
+  onClick('genReport', ()=>{ renderReport(lastResult); showScreen('s-report'); });
+  onClick('againBtn', ()=>showScreen('s-new'));
+  onClick('reportDownload', downloadReport);
+  onClick('vocabExport', exportVocab);
 
   // ===== PWA：注册 Service Worker + 桌面安装按钮 =====
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {

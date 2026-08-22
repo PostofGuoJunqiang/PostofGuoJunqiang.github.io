@@ -135,10 +135,28 @@
   }
   function getTask(id) { return state.history.find(x => x.taskId === id); }
 
+  // 从 JSON 文本导入备份（history/vocab/settings）。兼容三种形态：
+  //   1) {history:[...], vocab:[...], settings:{...}}
+  //   2) 纯数组且首项含 taskId → 视为 history
+  // 导入后立即落盘。返回 {ok, history, vocab, settings}
+  function importFromJSON(text) {
+    let obj;
+    try { obj = JSON.parse(text); } catch (e) { return { ok: false, error: '不是有效的 JSON 文件' }; }
+    let h = 0, v = 0, s = 0;
+    if (Array.isArray(obj.history)) { state.history = obj.history; h = obj.history.length; }
+    else if (Array.isArray(obj) && obj[0] && obj[0].taskId) { state.history = obj; h = obj.length; }
+    if (Array.isArray(obj.vocab)) { state.vocab = obj.vocab; v = obj.vocab.length; }
+    if (obj.settings && typeof obj.settings === 'object') { state.settings = Object.assign({}, state.settings, obj.settings); s = 1; }
+    try { persistAll(); } catch (e) { /* 落盘失败不阻塞（数据已在内存，本次会话可用） */ }
+    return { ok: true, history: h, vocab: v, settings: s };
+  }
+
   window.Store = {
     init, chooseFolder, ensureFolder,
     getHistory, getVocab, getSettings, saveVocab, saveHistory, saveSettings,
     addTask, updateTask, getTask, newTaskId,
-    isFileMode: () => useFS
+    importFromJSON,
+    isFileMode: () => useFS,
+    hasFolder: () => !!dirHandle
   };
 })();

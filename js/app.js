@@ -579,7 +579,10 @@
   }
   function buildReadingView(d){
     const reading = (d.sentences||[]).map(s=>
-      `<p data-i="${esc(s.index)}">${renderSentenceText(s)}<span class="sent-polish" data-i="${esc(s.index)}" title="润色这一句">润色</span><span class="sent-collect" data-i="${esc(s.index)}" title="收藏此句">☆</span></p>`
+      `<div class="sent-block" data-i="${esc(s.index)}">
+        <button class="sent-collect" data-i="${esc(s.index)}" title="收藏此句">☆</button>
+        <p data-i="${esc(s.index)}">${renderSentenceText(s)}<span class="sent-actions-inline"><button class="sent-polish" data-i="${esc(s.index)}" title="润色这一句">✦ 润色</button></span></p>
+      </div>`
     ).join('');
     const trans = d.translation
       ? `<div class="trans-card open" id="transCard"><div class="trans-head" id="transHead"><span class="section-title">全文翻译</span><span class="chev">▾</span></div><div class="trans-body">${esc(d.translation)}</div></div>`
@@ -603,11 +606,11 @@
       const tip=(!s.hasError && s.sentenceTip)?`<div class="sent-tip"><span class="tip-label">升级</span><span>${esc(s.sentenceTip)}</span></div>`:'';
       return `<div class="sent-card" data-i="${esc(s.index)}">
         <div class="sent-head"><span class="sent-idx">${esc(s.index)}</span>${s.hasError?'<span class="sent-flag bad">需修改</span>':'<span class="sent-flag ok">正确</span>'}
-        <span class="sent-collect" data-i="${esc(s.index)}" title="收藏此句">☆</span></div>
-        <div class="sent-orig">${esc(s.original)}</div>
+        <button class="sent-collect" data-i="${esc(s.index)}" title="收藏此句">☆</button></div>
+        <div class="sent-orig">${esc(s.original)} <span class="sent-actions-inline"><button class="sent-polish" data-i="${esc(s.index)}" title="润色这一句">✦ 润色</button></span></div>
         ${s.hasError?`<div class="sent-fix"><span class="fix-label">修改</span>${esc(s.corrected)}</div>`:''}
         ${issues}${tip}
-        <div class="sent-polish-row"><button class="sent-polish" data-i="${esc(s.index)}" title="润色这一句">✦ 润色这一句</button><div class="sent-polish-result" data-r="${esc(s.index)}" hidden></div></div>
+        <div class="sent-polish-result" data-r="${esc(s.index)}" hidden></div>
       </div>`;
     }).join('');
     const len = (d.sentences||[]).length;
@@ -874,6 +877,57 @@
       .then(({data:g})=>{ renderGloss(sheet, g||{}); })
       .catch(()=>{ const box=sheet.querySelector('#glossBox'); if(box) box.innerHTML='<div class="desc" style="color:var(--ink-3)">中文释义获取失败（接口或网络问题）</div>'; });
   }
+
+  // ===== 划选英文 → 右键 → 翻译 =====
+  function initContextTranslate(){
+    const screen = document.getElementById('s-result');
+    const menu = document.getElementById('ctxMenu');
+    const btn = document.getElementById('ctxTranslate');
+    if(!screen || !menu || !btn) return;
+    let picked = '';
+    screen.addEventListener('contextmenu', e=>{
+      const sel = window.getSelection && window.getSelection();
+      if(!sel){ return; }
+      const text = String(sel.toString() || '').trim();
+      if(text.length < 2 || text.length > 500) return;
+      const node = sel.anchorNode;
+      const el = node && (node.nodeType === 1 ? node : node.parentElement);
+      if(!el) return;
+      const inReading = !!(el.closest && el.closest('.reading, .sent-block, .sent-card'));
+      if(!inReading) return;
+      e.preventDefault();
+      picked = text;
+      menu.hidden = false;
+      const w = 180, h = 50;
+      const x = Math.min(e.clientX, window.innerWidth - w - 8);
+      const y = Math.min(e.clientY, window.innerHeight - h - 8);
+      menu.style.left = x + 'px';
+      menu.style.top = y + 'px';
+    });
+    btn.addEventListener('click', ()=>{
+      const text = picked;
+      menu.hidden = true;
+      window.getSelection && window.getSelection().removeAllRanges();
+      if(!text) return;
+      const html=`<div class="sheet-title"><span>选句翻译</span><span class="sheet-close">✕</span></div>
+        <div class="sheet-phon" style="margin-top:0">原文</div>
+        <div class="dict-def" style="color:var(--ink);font-family:'Inter',serif;font-weight:500;line-height:1.7;font-size:14px">${esc(text)}</div>
+        <div class="sheet-phon" style="margin-top:14px">译文</div>
+        <div id="selTransResult" class="dict-def" style="line-height:1.7">翻译中…</div>`;
+      const sheet = openSheet(html);
+      sheet.querySelector('.sheet-close').addEventListener('click', closeSheet);
+      if(window.LLM && LLM.doTranslate){
+        LLM.doTranslate(text).then(r=>{
+          const el = document.getElementById('selTransResult');
+          if(!el) return;
+          if(r.error || !r.translation){ el.textContent = '翻译失败：' + (r.error || '未知错误'); return; }
+          el.textContent = r.translation;
+        });
+      }
+    });
+    document.addEventListener('click', e=>{ if(!menu.hidden && !menu.contains(e.target)) menu.hidden = true; });
+    document.addEventListener('scroll', ()=>{ if(!menu.hidden) menu.hidden = true; }, true);
+  }
   function renderGloss(sheet, g){
     const box=sheet.querySelector('#glossBox'); if(!box) return;
     const pos = g.pos?`<span class="dict-pos">${esc(g.pos)}</span> `:'';
@@ -1058,6 +1112,7 @@
   try { Store.init(); } catch (e) {}
   Store.init().then(()=>{ if (typeof updateFolderBtn==='function') updateFolderBtn(); }).catch(()=>{});
   initVocabFilter();
+  initContextTranslate();
   let deferredPrompt = null;
   const wbInstallBtn = document.getElementById('wbInstall');
   window.addEventListener('beforeinstallprompt', (e) => {

@@ -343,8 +343,28 @@ button{font-family:inherit;}
 /* 桌面版隐藏：上一句/下一句导航（桌面有滚动条，可滚动浏览全部句子） */
 .sent-nav{display:none!important;}
 
-/* 整文润色 + 句子润色 */
-.polish-card{background:var(--dt-surface);border:1px solid rgba(0,0,0,.05);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;}
+/* 阅读视图：句块布局（句子+润色 / 收藏 独立容器） */
+.sent-block{position:relative;padding:0 36px 0 0;margin-bottom:10px;line-height:1.8;}
+.sent-block p{margin:0;}
+.sent-block .sent-collect{position:absolute;right:0;top:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:transparent;border:1px solid transparent;color:var(--dt-ink-3);font-size:16px;cursor:pointer;transition:background .15s ease,color .15s ease,border-color .15s ease,transform .08s ease;line-height:1;}
+.sent-block .sent-collect:hover{background:rgba(0,113,227,.08);color:var(--blue);}
+.sent-block .sent-collect.on{color:var(--warn);background:rgba(255,149,0,.12);}
+.sent-actions-inline{display:inline-flex;align-items:center;gap:6px;margin-left:8px;vertical-align:middle;}
+.sent-actions-inline .sent-polish{position:static;font-size:11.5px;color:var(--blue);background:var(--blue-soft);border:1px solid rgba(0,113,227,.15);border-radius:7px;padding:3px 9px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;font-weight:500;transition:background .15s ease,border-color .15s ease,transform .08s ease;white-space:nowrap;}
+.sent-actions-inline .sent-polish:hover{background:#D6E6FF;border-color:rgba(0,113,227,.30);}
+.sent-actions-inline .sent-polish:active{transform:scale(.97);}
+.sent-actions-inline .sent-polish.loading{opacity:.6;cursor:default;}
+
+/* 逐句卡片：润色按钮放句末 inline（与句子同块），收藏独立在 sent-head 右上 */
+.sent-card .sent-collect{position:absolute;right:8px;top:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:transparent;border:1px solid transparent;color:var(--dt-ink-3);font-size:16px;cursor:pointer;transition:background .15s ease,color .15s ease;line-height:1;}
+.sent-card .sent-collect:hover{background:rgba(0,113,227,.08);color:var(--blue);}
+.sent-card .sent-collect.on{color:var(--warn);background:rgba(255,149,0,.12);}
+.sent-card .sent-actions-inline{display:inline-flex;align-items:center;gap:6px;margin-left:8px;vertical-align:middle;}
+
+/* 右键翻译菜单 */
+.ctx-menu{position:fixed;z-index:200;min-width:160px;background:rgba(255,255,255,.98);border:1px solid rgba(0,0,0,.08);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:2px;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
+.ctx-item{font-size:13px;color:var(--dt-ink);background:transparent;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;text-align:left;font-family:'Noto Sans SC',sans-serif;transition:background .12s ease,color .12s ease;}
+.ctx-item:hover{background:var(--blue-soft);color:var(--blue);}
 .polish-card .polish-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .polish-card .polish-title{font-size:14.5px;font-weight:600;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;display:flex;align-items:center;gap:8px;}
 .polish-card .polish-title .spark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#AF52DE 0%,#5856D6 100%);color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center;}

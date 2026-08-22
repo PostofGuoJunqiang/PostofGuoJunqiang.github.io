@@ -162,7 +162,9 @@
   function loadLlmCfg(){
     try{
       const c = JSON.parse(localStorage.getItem(LLM_KEY) || '{}');
-      return { vendor: c.vendor || 'deepseek', key: c.key || '', base: c.base || '', model: c.model || '' };
+      let model = c.model || '';
+      if ((c.vendor || 'deepseek') !== 'custom' && /^(deepseek-chat|deepseek-reasoner)$/.test(model)) model = 'deepseek-v4-flash';
+      return { vendor: c.vendor || 'deepseek', key: c.key || '', base: c.base || '', model };
     }catch(e){ return { vendor: 'deepseek', key: '', base: '', model: '' }; }
   }
   const llmCfg = loadLlmCfg();
@@ -199,7 +201,7 @@
         llmCfg.model = modelInput.value.trim();
       } else {
         llmCfg.base = 'https://api.deepseek.com/chat/completions';
-        llmCfg.model = modelInput.value.trim() || 'deepseek-chat';
+        llmCfg.model = modelInput.value.trim() || 'deepseek-v4-flash';
       }
       // 双保险：先写一次，回读校验；失败时明确告知（隐私模式/被禁用 localStorage 会失败）
       let savedOk = false;
@@ -229,7 +231,7 @@
         // 临时把当前输入值写进 localStorage（便于 testConnection 读到），结束后恢复
         const prev = (function(){ try { return JSON.parse(localStorage.getItem(LLM_KEY) || '{}'); } catch(e){ return {}; } })();
         const tmpBase = llmCfg.vendor === 'custom' ? baseInput.value.trim() : 'https://api.deepseek.com/chat/completions';
-        const tmpModel = modelInput.value.trim() || 'deepseek-chat';
+        const tmpModel = modelInput.value.trim() || 'deepseek-v4-flash';
         try { localStorage.setItem(LLM_KEY, JSON.stringify(Object.assign({}, prev, { key: tmpKey, base: tmpBase, model: tmpModel }))); } catch(e){}
         const r = await LLM.testConnection();
         try { localStorage.setItem(LLM_KEY, JSON.stringify(prev)); } catch(e){}

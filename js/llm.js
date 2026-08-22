@@ -3,7 +3,7 @@
 // 评分标准数据直接复用 standards.js 的全局 STANDARDS（单一数据源，与 server.py 逐字一致）。
 (function () {
   const DEFAULT_BASE = 'https://api.deepseek.com/chat/completions';
-  const DEFAULT_MODEL = 'deepseek-chat'; // 官方稳定模型名（不要用编造的名字）
+  const DEFAULT_MODEL = 'deepseek-v4-flash'; // 官方现役模型名（deepseek-chat 已列为将弃用）
 
   // 读取「我的-模型设置」中保存的配置（localStorage.llm_cfg）
   function getLLMConfig() {
@@ -11,7 +11,9 @@
     try { c = JSON.parse(localStorage.getItem('llm_cfg') || '{}'); } catch (e) { }
     const vendor = c.vendor || 'deepseek';
     const base = c.base || (vendor === 'custom' ? '' : DEFAULT_BASE);
-    const model = c.model || DEFAULT_MODEL;
+    let model = c.model || DEFAULT_MODEL;
+    // 旧模型名自动升级：deepseek-chat / deepseek-reasoner → deepseek-v4-flash（官方 2026/07/24 弃用）
+    if (vendor !== 'custom' && /^(deepseek-chat|deepseek-reasoner)$/.test(model)) model = DEFAULT_MODEL;
     return { base, key: (c.key || '').trim(), model, models: [model] };
   }
 

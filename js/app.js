@@ -53,7 +53,7 @@
       <div class="wb-model-tip">模型设置：${_keySet}</div>
       <button class="wb-install" id="wbInstall" hidden>＋ 安装到桌面</button>
     </div>`;
-  document.querySelector('.phone').prepend(SIDEBAR);
+  document.querySelector('.phone') ? document.querySelector('.phone').prepend(SIDEBAR) : document.body.prepend(SIDEBAR);
   SIDEBAR.querySelectorAll('.wb-nav-item').forEach(b=>{
     b.addEventListener('click', ()=>{ const id=TAB_TARGET[b.dataset.go]; showScreen(id); if(id==='s-vocab') renderVocab(); });
   });

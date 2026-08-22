@@ -1,0 +1,71 @@
+/* 批改台 · 桌面版样式
+   先引入根样式（组件全复用：卡片/评分卡/逐句/词汇/弹层/toast/每日一句 等），
+   再做桌面工作台布局覆盖：深色左侧导航 + 主内容区 + 居中弹窗。
+   保留 .phone 类作为 app.js 注入桌面侧边栏（.wb-sidebar）的挂载点。 */
+@import url('../../css/style.css');
+
+/* ---------- 桌面工作台布局 ---------- */
+body{background:#EEF1F5;}
+
+/* 侧边栏：深色工作台风格（由 app.js 注入到 .phone） */
+.wb-sidebar{background:#14213D;border-right:none;padding-top:24px;}
+.wb-brand{padding-bottom:22px;}
+.wb-logo{background:var(--grad);box-shadow:0 4px 12px rgba(22,93,255,.35);}
+.wb-name{color:#fff;}
+.wb-sub{color:rgba(255,255,255,.55);}
+.wb-nav-item{color:rgba(255,255,255,.72);}
+.wb-nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.wb-nav-item.active{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(22,93,255,.35);}
+.wb-model-tip{background:rgba(255,255,255,.07);color:rgba(255,255,255,.62);}
+.wb-install{background:var(--blue);color:#fff;}
+.wb-install:hover{filter:brightness(1.08);}
+
+/* 主内容区 */
+.phone > .screen{left:248px;}
+.screen .content{max-width:1180px;margin:0 auto;padding:34px 44px;}
+
+/* 页头 */
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px;}
+.page-title{font-size:24px;font-weight:700;color:var(--ink);font-family:'Noto Sans SC',sans-serif;}
+.page-sub{font-size:13px;color:var(--ink-3);margin-top:4px;font-family:'Noto Sans SC',sans-serif;}
+.page-cta{width:auto;padding:0 26px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;}
+
+/* 首页横幅 */
+.hero-card{display:flex;align-items:center;justify-content:space-between;gap:24px;background:var(--grad);border-radius:20px;padding:34px 38px;color:#fff;box-shadow:0 12px 28px rgba(22,93,255,.20);margin-top:18px;}
+.hero-title{font-size:24px;font-weight:700;font-family:'Noto Sans SC',sans-serif;}
+.hero-desc{font-size:14px;line-height:1.7;color:rgba(255,255,255,.88);margin-top:8px;max-width:560px;}
+.hero-card .cta{background:#fff;color:var(--blue);border:none;height:46px;border-radius:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:18px;}
+.hero-card .cta:hover{filter:brightness(.97);}
+.hero-meta{display:flex;gap:30px;}
+.hero-stat{display:flex;flex-direction:column;align-items:center;}
+.hero-stat b{font-size:26px;font-family:'Inter',sans-serif;}
+.hero-stat span{font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;font-family:'Noto Sans SC',sans-serif;}
+
+/* 新建批改：双栏 */
+.new-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start;}
+.new-main{padding:24px;}
+.new-side{display:flex;flex-direction:column;}
+.guide-step{font-size:13px;line-height:1.6;color:var(--ink-2);padding:8px 0;border-bottom:1px dashed var(--border);font-family:'Noto Sans SC',sans-serif;}
+.guide-step:last-child{border-bottom:none;}
+.guide-step b{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--blue-soft);color:var(--blue);align-items:center;justify-content:center;font-size:12px;margin-right:8px;font-family:'Inter',sans-serif;}
+
+/* 我的 */
+.mine-wrap{max-width:680px;}
+
+/* 好词好句本：导出按钮 */
+.vocab-export-btn{display:inline-flex;align-items:center;gap:6px;padding:0 14px;height:40px;border-radius:10px;font-size:13px;color:var(--ink-2);}
+.vocab-export-btn span{font-family:'Noto Sans SC',sans-serif;}
+
+/* 弹层：居中弹窗（桌面风格） */
+.sheet{display:none;left:calc(50% + 124px);right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);width:min(620px,62vw);max-height:80vh;border-radius:16px;box-shadow:0 20px 48px rgba(16,33,68,.22);}
+.sheet.show{display:block;transform:translate(-50%,-50%);}
+
+/* 结果页操作按钮行 */
+.dual-cta{margin-top:18px;}
+
+/* 窄窗口兜底：收起说明栏与横幅统计 */
+@media (max-width:1100px){
+  .new-grid{grid-template-columns:1fr;}
+  .new-side{display:none;}
+  .hero-meta{display:none;}
+}

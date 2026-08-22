@@ -201,11 +201,23 @@
         llmCfg.base = 'https://api.deepseek.com/chat/completions';
         llmCfg.model = modelInput.value.trim() || 'deepseek-v4-flash';
       }
-      saveLlmCfg();
+      // 双保险：先写一次，回读校验；失败时明确告知（隐私模式/被禁用 localStorage 会失败）
+      let savedOk = false;
+      try {
+        saveLlmCfg();
+        const back = (function(){ try { return JSON.parse(localStorage.getItem(LLM_KEY) || '{}'); } catch(e){ return {}; } })();
+        savedOk = !!(back && back.key === llmCfg.key);
+      } catch(e){ savedOk = false; }
+      if (!savedOk) {
+        showToast('保存失败：浏览器禁用了本地存储（隐私模式？）');
+        keyInput.classList.add('llm-invalid');
+        return;
+      }
       showToast('模型设置已保存');
       updateModelTip();
     });
-    applyVendor();
+    // 启动时主动同步一次（侧边栏右侧"模型设置"提示文案 + input 回填）
+    updateModelTip();
   })();
 
   // 统一给 /api/* 请求附加 BYOK 配置头（API key 仅存本浏览器，不随包分发）

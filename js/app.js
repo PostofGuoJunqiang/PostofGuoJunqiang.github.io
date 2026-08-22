@@ -45,7 +45,7 @@
     tip.textContent = '模型设置：' + ((c && c.key) ? '已配置你的 API Key' : '未配置 Key（走服务端默认）');
   }
   SIDEBAR.innerHTML = `
-    <div class="wb-brand"><div class="wb-logo">批</div><div><div class="wb-name">批改台</div><div class="wb-sub">英语作文智能批改</div></div></div>
+    <div class="wb-brand"><div class="wb-logo">批</div><div><div class="wb-name">批改台</div><div class="wb-sub">英语作文批改</div></div></div>
     <nav class="wb-nav">
       ${TABS.map(([id,label])=>`<button class="wb-nav-item ${id==='home'?'active':''}" data-go="${id}">${ICONS[id]}<span>${label}</span></button>`).join('')}
     </nav>
@@ -265,7 +265,7 @@
         <div style="font-size:30px">⚠️</div>
         <div class="card-title">批改暂不可用</div>
         <div class="desc">${esc(msg)}</div>
-        <div class="desc" style="color:var(--ink-3)">逐句批改需调用大模型接口，请确认网络与额度后重试。</div>
+        <div class="desc" style="color:var(--ink-3)">逐句批改需调用模型接口，请确认网络与额度后重试。</div>
         <button class="cta-primary" id="retryGrade" style="width:160px;margin-top:4px">重试</button>
       </div>`;
     document.getElementById('retryGrade').addEventListener('click',()=>{ showScreen('s-new'); doGrade(); });
@@ -283,7 +283,7 @@
     }
     if(!key){
       return new Promise(res=>{
-        showConfirm({ title:'未填写 API Key', body:'本应用为纯本地运行，需你自己的大模型 API Key 才能批改。请到「我的-模型设置」填写（Key 仅存你本机，不会上传）。', confirmText:'去设置', cancelText:'取消',
+        showConfirm({ title:'未填写 API Key', body:'本应用为纯本地运行，需你自己的模型 API Key 才能批改。请到「我的-模型设置」填写（Key 仅存你本机，不会上传）。', confirmText:'去设置', cancelText:'取消',
           onConfirm:()=>{ showScreen('s-mine'); res(false); }, onCancel:()=>res(false) });
       });
     }
@@ -329,7 +329,7 @@
       showScreen('s-history');
       startPolling();
       showLoading(false);
-      // 后台直连大模型批改（数据不出本机）
+      // 后台直连模型批改（数据不出本机）
       (async ()=>{
         const r = await LLM.doGrade(text, levels, direction);
         if(r.error || !r.data){ task.status='failed'; task.error = r.error || '批改失败'; }
@@ -343,7 +343,7 @@
       const emsg = String(e.message || e || '');
       let msg = '异常：' + emsg;
       if(/Failed to fetch|NetworkError|ERR_CONNECTION|ECONNREFUSED|fetch failed|Network request failed|Access-Control|CORS|blocked by CORS/i.test(emsg)){
-        msg = '无法连接大模型接口：请确认「模型设置」中的接口地址与 Key 正确，且该接口允许浏览器跨域（CORS）；部分厂商需经服务端代理转发。';
+        msg = '无法连接模型接口：请确认「模型设置」中的接口地址与 Key 正确，且该接口允许浏览器跨域（CORS）；部分厂商需经服务端代理转发。';
       }
       renderGradeError(msg);
     }
@@ -543,7 +543,7 @@
     if(!body || !btn) return;
     if(btn.disabled) return;
     btn.disabled = true; body.hidden = false; body.className = 'polish-loading';
-    body.textContent = 'AI 正在润色整篇文章…';
+    body.textContent = '正在润色整篇文章…';
     LLM.doPolish(d.text || lastResultText || '').then(r=>{
       btn.disabled = false;
       if(r.error || !r.text){ body.className = 'polish-body'; body.textContent = '润色失败：' + (r.error || '未知错误'); return; }
@@ -872,7 +872,7 @@
       .then(r=>r.ok?r.json():Promise.reject('no'))
       .then(d=>{ const ph=sheet.querySelector('.sheet-phon'); if(ph) ph.textContent=''; renderDict(sheet,d); })
       .catch(()=>{ const ph=sheet.querySelector('.sheet-phon'); if(ph) ph.textContent='（英文释义源暂不可用）'; });
-    // 中文释义层（直连大模型，并行叠加）
+    // 中文释义层（直连模型，并行叠加）
     LLM.doGloss(word)
       .then(({data:g})=>{ renderGloss(sheet, g||{}); })
       .catch(()=>{ const box=sheet.querySelector('#glossBox'); if(box) box.innerHTML='<div class="desc" style="color:var(--ink-3)">中文释义获取失败（接口或网络问题）</div>'; });

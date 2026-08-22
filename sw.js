@@ -3,7 +3,7 @@
 - 同源 GET 走「缓存优先，后台更新」（stale-while-revalidate）
 - /api/* 与跨域请求（字典/字体）一律走网络，不缓存
 */
-const CACHE = 'pigai-shell-v3';
+const CACHE = 'pigai-shell-v4';
 const ASSETS = [
   '/',
   '/index.html',
@@ -14,9 +14,6 @@ const ASSETS = [
   '/js/app.js',
   '/js/daily.js',
   '/manifest.webmanifest',
-  '/desktop/index.html',
-  '/desktop/css/style.css',
-  '/desktop/manifest.webmanifest',
   '/icon.svg',
   '/icon-192.png',
   '/icon-512.png'

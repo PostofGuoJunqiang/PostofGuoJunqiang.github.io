@@ -41,7 +41,7 @@
     if (el) el.textContent = msg;
     if (cn) cn.textContent = sub || '';
     if (au) au.textContent = '';
-    if (src) src.textContent = 'AI';
+    if (src) src.textContent = '';
   }
   function renderItem(it) {
     const el = document.getElementById('dailyText');
@@ -53,7 +53,7 @@
     el.textContent = it.en || '';
     cn.textContent = it.cn || '';
     au.textContent = it.by ? '— ' + it.by : '';
-    if (src) src.textContent = 'AI';
+    if (src) src.textContent = '';
   }
   function setLoading(on) {
     loading = on;
@@ -64,7 +64,7 @@
     const nb = document.getElementById('dailyNext');
     const sb = document.getElementById('dailySave');
     if (on) {
-      if (el) el.textContent = 'AI 正在为你写一句…';
+      if (el) el.textContent = '正在为你写一句…';
       if (cn) cn.textContent = '请稍候';
       if (au) au.textContent = '';
       if (src) src.textContent = '';
@@ -105,7 +105,7 @@
     }
     const j = extractJSON(r.text);
     if (!j || !j.en) {
-      toast('AI 返回格式异常，请重试');
+      toast('返回格式异常，请重试');
       if (!aiPool().length) setEmptyState('生成失败，请重试', '点击「换一句」再试一次');
       return;
     }

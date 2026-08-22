@@ -18,6 +18,5 @@ cp sw.js                dist/
 cp icon.svg             dist/
 cp icon-192.png         dist/
 cp icon-512.png         dist/
-cp -r desktop           dist/desktop
 
 echo "✓ dist/ 已生成，可直接交给 GitHub Pages 部署"

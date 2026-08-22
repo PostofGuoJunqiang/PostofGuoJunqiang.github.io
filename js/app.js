@@ -189,6 +189,7 @@
   };
 
   let lastResult = null;
+  let lastResultText = '';
   let lastLevels = [];
   const LEVEL_KIND = {"CET4":"cet","CET6":"cet","考研英一A":"postgrad","考研英一B":"postgrad","考研英二A":"postgrad","考研英二B":"postgrad","高中":"senior","雅思":"ielts"};
 
@@ -225,6 +226,7 @@
   // 批改失败：优雅提示 + 重试
   function renderGradeError(msg){
     lastResult=null;
+    lastResultText='';
     document.getElementById('resultBody').innerHTML=`
       <div class="card" style="gap:14px;align-items:center;text-align:center">
         <div style="font-size:30px">⚠️</div>
@@ -298,7 +300,7 @@
       (async ()=>{
         const r = await LLM.doGrade(text, levels, direction);
         if(r.error || !r.data){ task.status='failed'; task.error = r.error || '批改失败'; }
-        else { task.status='done'; task.result = r.data; }
+        else { task.status='done'; task.result = Object.assign({}, r.data, {text: text}); lastResultText = text; }
         task.updated_at = Date.now()/1000;
         Store.updateTask(task);
         refreshTasks(); renderRecent();
@@ -413,7 +415,7 @@
         try{
           const r = await LLM.doGrade(t.text, t.levels||[], t.direction||'');
           if(r.error || !r.data){ t.status='failed'; t.error = r.error || '批改失败'; }
-          else { t.status='done'; t.result = r.data; }
+          else { t.status='done'; t.result = Object.assign({}, r.data, {text: t.text}); }
         }catch(e2){ t.status='failed'; t.error = String((e2&&e2.message)||e2); }
         t.updated_at = Date.now()/1000;
         Store.updateTask(t); refreshTasks(); renderRecent();
@@ -427,6 +429,7 @@
     if(!t) return;
     if(t.status!=='done' || !t.result){ showToast(t.error?friendlyError(t.error):'任务尚未完成，请稍候'); return; }
     lastResult = t.result;
+    lastResultText = t.text || '';
     lastTaskId = t.taskId;
     renderResult(t.result);
     showScreen('s-result');
@@ -508,7 +511,7 @@
     if(btn.disabled) return;
     btn.disabled = true; body.hidden = false; body.className = 'polish-loading';
     body.textContent = 'AI 正在润色整篇文章…';
-    LLM.doPolish(d.text || '').then(r=>{
+    LLM.doPolish(d.text || lastResultText || '').then(r=>{
       btn.disabled = false;
       if(r.error || !r.text){ body.className = 'polish-body'; body.textContent = '润色失败：' + (r.error || '未知错误'); return; }
       const j = extractJSONSafe(r.text);
@@ -787,7 +790,13 @@
   }
 
   // ===== 底部弹层 / 取词 / 纠错 / 好词好句本 =====
-  function openSheet(){ document.getElementById('sheetMask').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
+  function openSheet(html){
+    const s=document.getElementById('sheet');
+    if(html!==undefined) s.innerHTML=`<div class="sheet-content">${html||''}</div>`;
+    document.getElementById('sheetMask').classList.add('show');
+    s.classList.add('show');
+    return s;
+  }
   function closeSheet(){ document.getElementById('sheetMask').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }
   document.getElementById('sheetMask').addEventListener('click', closeSheet);
 
@@ -799,26 +808,24 @@
       return `<div class="err-issue"><span class="issue-tag ${sev}">${esc(it.type)}</span><span>${esc(it.note)}</span></div>`;
     }).join('');
     const tip=(!s.hasError && s.sentenceTip)?`<div class="err-tip"><span style="font-weight:600">升级</span> ${esc(s.sentenceTip)}</div>`:'';
-    const sheet=document.getElementById('sheet');
-    sheet.innerHTML=`<div class="sheet-title"><span>修改建议</span><span class="sheet-close">✕</span></div>
+    const html=`<div class="sheet-title"><span>修改建议</span><span class="sheet-close">✕</span></div>
       <div class="err-orig">${esc(s.original)}</div>
       ${s.hasError?`<div class="err-fix"><span style="font-weight:600">建议改为：</span>${esc(s.corrected)}</div>`:''}
       ${issues}
       ${tip}
       <div class="sheet-actions"><button class="cta-secondary" id="errClose" style="flex:1">知道了</button></div>`;
-    openSheet();
+    const sheet=openSheet(html);
     sheet.querySelector('.sheet-close').addEventListener('click',closeSheet);
     sheet.querySelector('#errClose').addEventListener('click',closeSheet);
   }
 
   function showWordSheet(word){
-    const sheet=document.getElementById('sheet');
-    sheet.innerHTML=`<div class="sheet-title"><span>单词查询 · ${esc(word)}</span><span class="sheet-close">✕</span></div>
+    const html=`<div class="sheet-title"><span>单词查询 · ${esc(word)}</span><span class="sheet-close">✕</span></div>
       <div class="sheet-word">${esc(word)}</div>
       <div class="sheet-phon">查询中…</div>
       <div id="glossBox"></div>
       <div class="sheet-actions"><button class="cta-primary" id="wRead">朗读</button><button class="cta-secondary" id="wSave">收藏</button></div>`;
-    openSheet();
+    const sheet=openSheet(html);
     sheet.querySelector('.sheet-close').addEventListener('click',closeSheet);
     sheet.querySelector('#wRead').addEventListener('click',()=>speak(word));
     sheet.querySelector('#wSave').addEventListener('click',()=>{
@@ -996,7 +1003,7 @@
     if(card.dataset.task){
       const list = await refreshTasks();
       const t = (list||[]).find(x=>x.taskId===card.dataset.task);
-      if(t && t.status==='done' && t.result){ lastResult = t.result; renderResult(t.result); showScreen('s-result'); }
+      if(t && t.status==='done' && t.result){ lastResult = t.result; lastResultText = t.text||''; renderResult(t.result); showScreen('s-result'); }
       else { showToast('任务尚未完成，请稍候'); }
     }
   });

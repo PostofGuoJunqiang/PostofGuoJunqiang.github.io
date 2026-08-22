@@ -19,7 +19,8 @@
     if (!cfg || !cfg.key) return Promise.resolve({ text: null, error: '未填写 API Key（请在「我的-模型设置」填写）' });
     if (!cfg.base) return Promise.resolve({ text: null, error: '未配置模型接口地址（请在「我的-模型设置」选择服务商或填写自定义 Base）' });
     const model = cfg.model || (cfg.models && cfg.models[0]) || '';
-    const body = JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], stream: false, temperature: 0.3 });
+    const temperature = (cfg && typeof cfg.temperature === 'number') ? cfg.temperature : 0.3;
+    const body = JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], stream: false, temperature });
     return fetch(cfg.base, {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + cfg.key, 'Content-Type': 'application/json' },
@@ -264,20 +265,55 @@ JSON 字段：word（原词，保持原样）、phonetic（音标，如 /kəˈmj
     return callLLM(prompt, getLLMConfig());
   }
 
-  // 整文润色：在保留原意与考生水平的前提下，把整篇英文表达得更地道、更学术化
-  const POLISH_PROMPT = '你是一位英语写作润色专家。请对以下英文作文做整文润色：\n1. 保留原文全部核心信息、论证结构和考生真实水平（不要拔高到母语者水准，保留可学习性）；\n2. 修正语法错误，替换不自然的表达，把词汇/句型升级到 CET-6 / 考研 / 雅思 6.5 水平；\n3. 在合适位置加入自然连接词，但不要大幅扩张篇幅；\n4. 严格只返回 JSON：{"polished":"润色后的完整英文文本","changes":[{"before":"原片段","after":"修改后","reason":"一句中文说明"}]}，不要任何其它文字。\n\n作文：\n{text}';
+  // 整文润色：遵循专业 copy-editing 原则（清晰、简洁、主动、具体），保留原意与考生真实水平
+  const POLISH_PROMPT = '你是一位严格遵循行业编辑准则（参考 Chicago Manual of Style / UK GOV / CERN / Northwest Editors Guild 标准）的英语写作润色专家。请按以下规则对以下英文作文做整文润色。\n' +
+    '\n【硬性规则】\n' +
+    '1. 保留原文全部核心信息、论证逻辑和考生真实水平。**不要把文章拔高到母语者水准**——保留可学习性，不大改结构。\n' +
+    '2. 严格只返回 JSON：{"polished":"润色后的完整英文文本","changes":[{"before":"原片段","after":"修改后","reason":"一句中文说明"}]}，不要任何其它文字、不要 markdown 代码块。\n' +
+    '\n【润色原则（按优先级）】\n' +
+    'A. 清晰 Clarity\n' +
+    '   - 主谓宾结构清楚，避免悬垂修饰语（dangling modifiers）。\n' +
+    '   - 代词指代明确（用 this / that / these 时确保指代唯一）。\n' +
+    '   - 避免名词串（noun strings），在适当处加介词或动词拆分。\n' +
+    'B. 简洁 Conciseness\n' +
+    '   - 删冗余：in order to → to；due to the fact that → because；a number of → several/many；as well as → and；at this point in time → now。\n' +
+    '   - 名词化转动词：make a decision → decide；conduct an investigation → investigate；provide a description → describe。\n' +
+    '   - 删填充词（filler）：it should be noted that / basically / actually / really / just / very。\n' +
+    '   - 合并重复或过短的相邻句。\n' +
+    'C. 主动 Active voice（默认；只在施动者未知/不重要/避免指责时用被动）\n' +
+    '   - 弱动词替换：give consideration to → consider；make use of → use；carry out → do/conduct。\n' +
+    'D. 词义 Word choice\n' +
+    '   - 简单具体词优先：commence → start；utilize → use；facilitate → help。\n' +
+    '   - 避免行话与陈词滥调（clichés）。\n' +
+    '   - 区分 that / which（限定用 that，非限定用 ,which）。\n' +
+    'E. 句式 Sentence structure\n' +
+    '   - 短句 18-25 词；避免连续三个以上长句。\n' +
+    '   - 平行结构（parallelism）保持一致。\n' +
+    '   - 介词短语贴近其修饰的动词，避免悬垂。\n' +
+    'F. 标点与大小写 Punctuation & case\n' +
+    '   - 句末标点正确；逗号不连接独立从句（用 ; 或 .）。\n' +
+    'G. 保留事项（不要做）\n' +
+    '   - 不要删除原文任何核心论点或事实。\n' +
+    '   - 不要引入原文没有的新观点或事实。\n' +
+    '   - 不要改写考生的个人化表达（如有明显个人风格的口语化措辞可保留）。\n' +
+    '   - 专有名词、引用、数字、时间不修改。\n' +
+    '\n【输出长度】changes 数组 5-10 条即可（最重要的修改），不必穷举。\n\n作文：\n{text}';
   function doPolish(text) {
     if (!text || !text.trim()) return Promise.resolve({ text: null, error: '原文为空' });
     const prompt = POLISH_PROMPT.replace('{text}', text.slice(0, 3000));
-    return callLLM(prompt, getLLMConfig());
+    return callLLM(prompt, Object.assign({}, getLLMConfig(), { temperature: 0.2 }));
   }
 
   // 单句润色：把这一句写得更地道（保留语义和难度）
-  const SENT_POLISH_PROMPT = '你是一位英语写作润色专家。请把下面这个英文句子润色得更地道、更学术化（保留原意与大致难度，不要拔高到母语者水平）。严格只返回 JSON：{"polished":"润色后的句子","reason":"一句中文说明修改要点"}，不要任何其它文字。\n\n原句：{sent}';
+  const SENT_POLISH_PROMPT = '你是一位英语写作润色专家。请按以下规则润色下面这个英文句子：\n' +
+    '1. 保留原意与大致难度（不要拔高到母语者水平）。\n' +
+    '2. 修复语法/搭配错误，替换不自然表达，提升 1-2 处用词或句型到 CET-6/考研 水平。\n' +
+    '3. 严格只返回 JSON：{"polished":"润色后的句子","reason":"一句中文说明修改要点"}，不要任何其它文字、不要 markdown 代码块。\n' +
+    '\n原句：{sent}';
   function doPolishSentence(sent) {
     if (!sent || !sent.trim()) return Promise.resolve({ text: null, error: '句子为空' });
     const prompt = SENT_POLISH_PROMPT.replace('{sent}', sent);
-    return callLLM(prompt, getLLMConfig());
+    return callLLM(prompt, Object.assign({}, getLLMConfig(), { temperature: 0.2 }));
   }
 
   window.LLM = { getLLMConfig, doGrade, doGloss, doTranslate, doTopicCheck, doChat, doPolish, doPolishSentence };

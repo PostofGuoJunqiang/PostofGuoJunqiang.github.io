@@ -362,9 +362,16 @@ button{font-family:inherit;}
 .sent-card .sent-actions-inline{display:inline-flex;align-items:center;gap:6px;margin-left:8px;vertical-align:middle;}
 
 /* 右键翻译菜单 */
-.ctx-menu{position:fixed;z-index:200;min-width:160px;background:rgba(255,255,255,.98);border:1px solid rgba(0,0,0,.08);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:2px;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
+.ctx-menu{position:fixed;z-index:200;min-width:160px;background:rgba(255,255,255,.98);border:1px solid rgba(0,0,0,.08);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;flex-direction:column;gap:2px;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
+.ctx-menu[hidden]{display:none!important;}
 .ctx-item{font-size:13px;color:var(--dt-ink);background:transparent;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;text-align:left;font-family:'Noto Sans SC',sans-serif;transition:background .12s ease,color .12s ease;}
 .ctx-item:hover{background:var(--blue-soft);color:var(--blue);}
+
+/* 桌面版双 CTA 按钮行：紧凑胶囊，不再撑满手机壳宽度 */
+.dual-cta{display:flex;gap:12px;margin-top:20px;}
+.dual-cta .cta-primary{flex:1;height:46px;border-radius:980px;font-size:14.5px;font-weight:600;box-shadow:0 4px 14px rgba(0,113,227,.22);background:var(--blue);}
+.dual-cta .cta-primary:hover{filter:brightness(1.06);box-shadow:0 6px 16px rgba(0,113,227,.28);}
+.dual-cta .cta-primary:active{transform:scale(.985);}
 .polish-card .polish-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .polish-card .polish-title{font-size:14.5px;font-weight:600;color:var(--dt-ink);font-family:'Noto Sans SC',sans-serif;display:flex;align-items:center;gap:8px;}
 .polish-card .polish-title .spark{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#AF52DE 0%,#5856D6 100%);color:#fff;font-size:12px;display:inline-flex;align-items:center;justify-content:center;}
